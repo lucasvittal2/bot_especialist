@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "bot_specialist"
+name = "bot_especialist"
 version = "1.0.0"
 description = ""
 authors = ["lucasvittal2 <lucasvittal@gmail.com>"]
