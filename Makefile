@@ -252,7 +252,7 @@ docker-clean:
 .PHONY: build-wheel
 build-wheel:
 	@$(POETRY) install
-	@$(PYTHON) setup.py sdist bdist_wheel --formats=zip
+	@$(PYTHON) setup.py sdist --formats=zip bdist_wheel
 	@printf "[Makefile] - Build complete. '.tar.gz', '.zip', and '.whl' files generated in 'dist/' directory.\n\n"
 
 .PHONY: clean-build
