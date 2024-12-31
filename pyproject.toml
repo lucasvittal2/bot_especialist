@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "bot_specialist"
+version = "1.0.0"
+description = ""
+authors = ["lucasvittal2 <lucasvittal@gmail.com>"]
+readme = "README.md"
+package-mode = true
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pre-commit = "^4.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

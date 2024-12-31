@@ -1,0 +1,2 @@
+GENERATE_QA_PROMPT: 
+  "\nFor the following text, extract the following information:\n\nquestion: generate a question regarding the text content\n\nanswer: regarding the text content, answer the  question\n\ntext: {text}\n\n{format_instructions}\n"
