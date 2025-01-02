@@ -17,7 +17,7 @@ The ultimate goal is to create an application that serves as an intelligent assi
 
 
 def get_version():
-    with open("src/bot_especialist/__init__.py") as f:
+    with open("./bot_especialist/__init__.py") as f:
         init_contents = f.read()
     version_match = re.search(
         r'^__version__\s*=\s*[\'"]([^\'"]+)[\'"]', init_contents, re.MULTILINE
@@ -38,6 +38,8 @@ dependencies = [
     "scikit-learn==1.5.1",
     "google-cloud-secret-manager==2.20.0",
     "google-cloud-bigquery==3.26.0",
+    "uvicorn==0.34.0",
+    "fastapi==0.115.6",
 ]
 
 setuptools.setup(
