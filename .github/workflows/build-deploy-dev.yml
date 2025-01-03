@@ -65,6 +65,10 @@ jobs:
         with:
           FILE_PATH: ${{ env.VERSION_FILE }}
 
+      - name: Install dependencies
+        id: poetry_install
+        uses: ./.github/actions/poetry-install
+
       - name: Gcloud Auth
         uses: google-github-actions/auth@v2
         with:
@@ -79,6 +83,10 @@ jobs:
         with:
           VERSION: ${{ steps.set_version.outputs.VERSION }}
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
+
+      - name: Check App functions with unit tests
+        id: check_functionalities
+        uses: ./.github/actions/run-unit-tests
 
       - name: Docker Build & Push
         uses: ./.github/actions/docker-build-push
