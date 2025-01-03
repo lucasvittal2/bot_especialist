@@ -8,19 +8,11 @@ on:
 runs:
   using: "composite"
   steps:
-    - name: Check out code
-      uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.9'
-
     - name: Run tests
       run: |
         echo "Running all Unit tests..."
         echo
-        python -m unittest discover -s <test_directory> -p "test_*.py" -v
+        python -m unittest discover -s tests -p "test_*.py" -v
         echo
         echo "All unit test were run."
 
