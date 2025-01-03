@@ -18,7 +18,7 @@ env:
 
 jobs:
   composer-sync:
-    runs-on: acer-Aspire-A315-23
+    runs-on: self-hosted
     environment: dev
     steps:
       - name: Checkout repository
@@ -50,7 +50,7 @@ jobs:
 
   docker-build:
     needs: composer-sync
-    runs-on: acer-Aspire-A315-23
+    runs-on: self-hosted
     environment: dev
     steps:
       - name: Checkout repository
