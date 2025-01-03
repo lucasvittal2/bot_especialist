@@ -1,0 +1,32 @@
+---
+name: Docker Build and Push
+description: Docker Build and Push to Artifact Registry
+
+inputs:
+  BEAM_IMAGE:
+    description: "Beam image name"
+    required: true
+  BEAM_VERSION:
+    description: "Beam image version"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Log in to Artifact Registry
+      run: gcloud auth configure-docker us-central1-docker.pkg.dev
+      shell: bash
+
+    - name: Build and Push Docker Image
+      run: |
+        docker build \
+          --build-arg BEAM_IMAGE=${BEAM_IMAGE} \
+          --build-arg BEAM_VERSION=${BEAM_VERSION} \
+          -t ${ARTIFACT_REGISTRY_URI}/${DOCKER_IMAGE_TAG} .
+        docker push ${ARTIFACT_REGISTRY_URI}/${DOCKER_IMAGE_TAG}
+      shell: bash
+
+    - name: Docker System Prune
+      run: docker system prune -f
+      shell: bash

@@ -1,0 +1,24 @@
+---
+name: Set Package Version
+description: Set the package version for distro
+
+inputs:
+  FILE_PATH:
+    description: 'Path to the __init__.py file'
+    required: true
+    default: 'src/bot_especialist/__init__.py'
+
+outputs:
+  VERSION:
+    value: ${{ steps.set-version.outputs.VERSION }}
+    description: 'The extracted package version'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set Package Version
+      id: set-version
+      run: |
+        VERSION=$(grep '__version__' ${{ inputs.FILE_PATH }} | cut -d '"' -f2)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+      shell: bash

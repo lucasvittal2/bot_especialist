@@ -1,0 +1,28 @@
+---
+name: Poetry Install
+description: Poetry install dependencies
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python environment
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+
+    - name: Cache Poetry dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/pypoetry
+          ~/.cache/pip
+        key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}-${{ github.run_id }}
+
+    - name: Install dependencies
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "${HOME}/.local/bin" >> $GITHUB_PATH
+        poetry --version
+        poetry config virtualenvs.create false
+        poetry install --no-interaction --no-ansi
+      shell: bash

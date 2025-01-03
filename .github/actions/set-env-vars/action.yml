@@ -1,0 +1,36 @@
+---
+name: Set Environment Variables
+description: Set environment variables for pipelines build and deploy
+
+inputs:
+  VERSION:
+    description: "Version of the pipeline"
+    required: true
+  ENVIRONMENT:
+    description: "Environment name"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set Workflow Variables
+      run: |
+        COMPOSER_BUCKET="gs://bot-especialist-${ENVIRONMENT}"
+        LOCAL_DAGS_PATH="src/bot_especialist/dags"
+        ARTIFACT_REGISTRY_ENV="bot-especialist-${ENVIRONMENT}"
+        PULL_PROMPTS_PY="src.bot_especialist.promptsregistry.pull_prompts"
+        ARTIFACT_REGISTRY_URI="us-central1-docker.pkg.dev/${ARTIFACT_REGISTRY_ENV}/bot-especialist"
+        DOCKER_IMAGE_TAG="document-ingestion-pipelines:$VERSION-$ENVIRONMENT"
+        DOCKER_FILE_TAG="docker_version.txt"
+
+        echo "ENVIRONMENT=${ENVIRONMENT}" >> $GITHUB_ENV
+        echo "COMPOSER_BUCKET=${COMPOSER_BUCKET}" >> $GITHUB_ENV
+        echo "LOCAL_DAGS_PATH=${LOCAL_DAGS_PATH}" >> $GITHUB_ENV
+        echo "ARTIFACT_REGISTRY_ENV=${ARTIFACT_REGISTRY_ENV}" >> $GITHUB_ENV
+        echo "PULL_PROMPTS_PY=${PULL_PROMPTS_PY}" >> $GITHUB_ENV
+        echo "DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}" >> $GITHUB_ENV
+        echo "DOCKER_FILE_TAG=${DOCKER_FILE_TAG}" >> $GITHUB_ENV
+        echo "ARTIFACT_REGISTRY_URI=${ARTIFACT_REGISTRY_URI}" >> $GITHUB_ENV
+
+        echo "${DOCKER_IMAGE_TAG}" > "${DOCKER_FILE_TAG}"
+      shell: bash
