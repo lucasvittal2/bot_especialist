@@ -43,7 +43,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Set Workflow Variables
-        uses: ./.github/actions/set-env-args
+        uses: ./.github/actions/set-env-vars
         with:
           VERSION: ${{ steps.set_version.outputs.VERSION }}
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
