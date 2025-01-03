@@ -23,4 +23,5 @@ runs:
         python -m unittest discover -s <test_directory> -p "test_*.py" -v
         echo
         echo "All unit test were run."
+
       shell: bash
