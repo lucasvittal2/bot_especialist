@@ -1,0 +1,87 @@
+name: Composer Sync & Docker Build DEV
+
+on:
+  pull_request:
+    branches:
+      - dev
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+env:
+  ENVIRONMENT: "dev"
+  BEAM_VERSION: "2.59.0"
+  BEAM_IMAGE: "apache/beam_python3.11_sdk"
+  VERSION_FILE: 'src/magic_apron_review_summary/__init__.py'
+
+jobs:
+  composer-sync:
+    runs-on: acer-Aspire-A315-23
+    environment: dev
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Set Package Version
+        id: set_version
+        uses: ./.github/actions/set-version
+        with:
+          FILE_PATH: ${{ env.VERSION_FILE }}
+
+      - name: Gcloud Auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          export_environment_variables: true
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set Workflow Variables
+        uses: ./.github/actions/set-env-args
+        with:
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
+          ENVIRONMENT: ${{ env.ENVIRONMENT }}
+
+  docker-build:
+    needs: composer-sync
+    runs-on: acer-Aspire-A315-23
+    environment: dev
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Set Package Version
+        id: set_version
+        uses: ./.github/actions/set-version
+        with:
+          FILE_PATH: ${{ env.VERSION_FILE }}
+
+      - name: Gcloud Auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          export_environment_variables: true
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set Workflow Variables
+        uses: ./.github/actions/set-env-args
+        with:
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
+          ENVIRONMENT: ${{ env.ENVIRONMENT }}
+
+      - name: Docker Build & Push
+        uses: ./.github/actions/docker-build-push
+        with:
+          BEAM_IMAGE: ${{ env.BEAM_IMAGE }}
+          BEAM_VERSION: ${{ env.BEAM_VERSION }}
