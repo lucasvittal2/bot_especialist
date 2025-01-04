@@ -23,7 +23,7 @@ runs:
     - name: Build and Push Docker Image
       run: |
         docker build \
-          --build-arg PYTHON_IMAGE=${PYTHON_IMAGE}
+          --build-arg PYTHON_IMAGE=${PYTHON_IMAGE} \
           --build-arg BEAM_IMAGE=${BEAM_IMAGE} \
           --build-arg BEAM_VERSION=${BEAM_VERSION} \
           -t ${ARTIFACT_REGISTRY_URI}/${DOCKER_IMAGE_TAG} .
