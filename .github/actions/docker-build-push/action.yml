@@ -20,13 +20,13 @@ runs:
 
     - name: Build and Push Docker Image
       run: |
-        sudo docker build \
+        docker build \
           --build-arg BEAM_IMAGE=${BEAM_IMAGE} \
           --build-arg BEAM_VERSION=${BEAM_VERSION} \
           -t ${ARTIFACT_REGISTRY_URI}/${DOCKER_IMAGE_TAG} .
-        sudo docker push ${ARTIFACT_REGISTRY_URI}/${DOCKER_IMAGE_TAG}
+        docker push ${ARTIFACT_REGISTRY_URI}/${DOCKER_IMAGE_TAG}
       shell: bash
 
     - name: Docker System Prune
-      run: sudo docker system prune -f
+      run: docker system prune -f
       shell: bash
