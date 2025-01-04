@@ -15,6 +15,7 @@ env:
   BEAM_VERSION: "2.59.0"
   BEAM_IMAGE: "apache/beam_python3.11_sdk"
   VERSION_FILE: 'src/bot_especialist/__init__.py'
+  PYTHON_IMAGE: "python:3.9"
 
 jobs:
   composer-sync:

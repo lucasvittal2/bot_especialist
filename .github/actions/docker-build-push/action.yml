@@ -3,6 +3,8 @@ name: Docker Build and Push
 description: Docker Build and Push to Artifact Registry
 
 inputs:
+  PYTHON_IMAGE:
+    description: "Python Docker Image"
   BEAM_IMAGE:
     description: "Beam image name"
     required: true
@@ -21,6 +23,7 @@ runs:
     - name: Build and Push Docker Image
       run: |
         docker build \
+          --build-arg PYTHON_IMAGE=${PYTHON_IMAGE}
           --build-arg BEAM_IMAGE=${BEAM_IMAGE} \
           --build-arg BEAM_VERSION=${BEAM_VERSION} \
           -t ${ARTIFACT_REGISTRY_URI}/${DOCKER_IMAGE_TAG} .
