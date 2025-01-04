@@ -14,11 +14,12 @@ env:
   ENVIRONMENT: "dev"
   BEAM_VERSION: "2.59.0"
   BEAM_IMAGE: "apache/beam_python3.11_sdk"
-  VERSION_FILE: 'src/magic_apron_review_summary/__init__.py'
+  VERSION_FILE: 'src/bot_especialist/__init__.py'
+  PYTHON_IMAGE: "python:3.9"
 
 jobs:
   composer-sync:
-    runs-on: acer-Aspire-A315-23
+    runs-on: self-hosted
     environment: dev
     steps:
       - name: Checkout repository
@@ -43,14 +44,14 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Set Workflow Variables
-        uses: ./.github/actions/set-env-args
+        uses: ./.github/actions/set-env-vars
         with:
           VERSION: ${{ steps.set_version.outputs.VERSION }}
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
 
   docker-build:
     needs: composer-sync
-    runs-on: acer-Aspire-A315-23
+    runs-on: self-hosted
     environment: dev
     steps:
       - name: Checkout repository
@@ -65,6 +66,10 @@ jobs:
         with:
           FILE_PATH: ${{ env.VERSION_FILE }}
 
+      - name: Install dependencies
+        id: poetry_install
+        uses: ./.github/actions/poetry-install
+
       - name: Gcloud Auth
         uses: google-github-actions/auth@v2
         with:
@@ -75,10 +80,14 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Set Workflow Variables
-        uses: ./.github/actions/set-env-args
+        uses: ./.github/actions/set-env-vars
         with:
           VERSION: ${{ steps.set_version.outputs.VERSION }}
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
+
+      - name: Check App functions with unit tests
+        id: check_functionalities
+        uses: ./.github/actions/run-unit-tests
 
       - name: Docker Build & Push
         uses: ./.github/actions/docker-build-push
