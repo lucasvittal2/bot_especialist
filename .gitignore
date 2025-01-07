@@ -3,3 +3,5 @@ build/
 bot_especialist.egg-info/
 bot-especialist-3.9/
 .idea/
+/terraform/environments/dev/.terraform/
+/terraform/environments/dev/.terraform.lock.hcl
