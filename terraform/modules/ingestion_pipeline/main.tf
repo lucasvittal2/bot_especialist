@@ -3,14 +3,14 @@ provider "google" {
   region= var.region
 }
 
-# Infra para upload de documentos e notificações
 
+# Create Infrastructure  for document upload
 data "google_storage_project_service_account" "gcs_account" {
   provider = google-beta
   project = var.project_name
 }
 
-# Criação de um tópico Pub/Sub
+
 resource "google_pubsub_topic" "topic" {
   name     = var.trigger_topic_name
   provider = google-beta
@@ -25,8 +25,6 @@ resource "google_pubsub_topic_iam_binding" "binding" {
 }
 
 
-
-# Criação do bucket no Google Cloud Storage
 resource "google_storage_bucket" "bucket" {
   name          = var.bucket_name
   location      = "US"
@@ -47,7 +45,7 @@ resource "google_storage_bucket_iam_member" "bucket_role_assignment" {
   member = "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
 }
 
-# Configuração da notificação no bucket
+## Configure bucket binding notification
 
 resource "google_storage_notification" "bucket_notification" {
   bucket         = google_storage_bucket.bucket.name
@@ -61,7 +59,7 @@ resource "google_storage_notification" "bucket_notification" {
   ]
 }
 
-# Provisionando Pipeline de Ingestão no Composer
+# Provisioning Ingestion Pipeline
 
 ## Grant required roles to the custom service account
 
@@ -114,5 +112,3 @@ resource "google_composer_environment" "ingestion_pipeline_environment" {
 
   }
 }
-
-# Provisioning AlloyDB
