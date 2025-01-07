@@ -4,15 +4,12 @@ module "ingestion_pipeline" {
   project_name                   = "bot-especialist-dev"
   region                     = "us-central1"
   service_account_id         = "custom-service-account-dev"
-  service_account_display_name = "Dev Custom Service Account"
   location = "US"
   project_id = "680560386191"
   trigger_topic_name = "ingestion-pipeline-dev"
-  composer_service_account_worker="ingestion-worker-680560386191"
   composer_image_version = "composer-2.10.1-airflow-2.10.2"
   composer_env_name = "ingestion-pipeline"
   bucket_name= "pdf-repository-dev-680560386191"
-  alloy_cluster_id = "alloydb-cluster-dev"
 
 }
 
@@ -57,4 +54,18 @@ module "alloydb_central" {
   depends_on = [
     google_service_networking_connection.vpc_connection
   ]
+}
+
+module "bot_api" {
+  source           = "../../modules/bot_api"
+  app_name         = "testing-dev"
+  project_name     = "bot-especialist-dev"
+  project_id       = "680560386191"
+  region           = "us-central1"
+  container_image = "us-central1-docker.pkg.dev/bot-especialist-dev/bot-especialist/document-ingestion-pipelines@sha256:56269a4848a47c82d689a6672aff0d6bc7b097e8c1d8f1ad0b137e7f8b83897d"
+  #change later, the current one is just for test
+  feedback_db_name = "feedback-database"
+  dialogue_db_name = "dialogue-database"
+  postgres_version = "POSTGRES_15"
+  db_instance_type = "db-f1-micro"
 }
