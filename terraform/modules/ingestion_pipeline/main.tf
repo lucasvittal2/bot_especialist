@@ -114,3 +114,5 @@ resource "google_composer_environment" "ingestion_pipeline_environment" {
 
   }
 }
+
+# Provisioning AlloyDB
