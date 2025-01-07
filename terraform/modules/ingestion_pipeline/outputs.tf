@@ -9,3 +9,7 @@ output "pubsub_topic_name" {
 output "notification_id" {
   value = google_storage_notification.bucket_notification.id
 }
+
+output "dags_bucket_folder" {
+  value = google_composer_environment.ingestion_pipeline_environment.config[0].dag_gcs_prefix
+}

@@ -35,8 +35,8 @@ variable "trigger_topic_name"{
   type = string
 }
 
-variable "composer_service_account" {
-  description = "Composer service account"
+variable "composer_service_account_worker" {
+  description = "Composer service account for worker"
   type  = string
 }
 
@@ -47,5 +47,20 @@ variable "project_name" {
 
 variable "bucket_name" {
   description = "The Bucket where pdf will be uploaded"
+  type = string
+}
+
+variable "alloy_cluster_id" {
+  description = "cluster identifier used for vector store"
+  type = string
+}
+
+variable "composer_image_version" {
+  description = "Composer Image version"
+  type = string
+}
+
+variable "composer_env_name" {
+  description = "Composer environment name"
   type = string
 }
