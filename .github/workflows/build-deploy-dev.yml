@@ -111,7 +111,7 @@ jobs:
           BEAM_VERSION: ${{  env.BEAM_VERSION  }}
 
 
-  environment-setup:
+  provisioning-setup:
     needs: docker-build
     runs-on: acer-Aspire-A315-23
     environment: dev
@@ -158,7 +158,7 @@ jobs:
           fi
 
   heath-checks:
-    needs: environment-setup
+    needs: provisioning-setup
     runs-on: acer-Aspire-A315-23
     environment: dev
     steps:
