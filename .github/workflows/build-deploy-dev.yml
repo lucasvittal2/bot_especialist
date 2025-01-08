@@ -256,7 +256,7 @@ jobs:
 
       - name: Check if API Container is reachable
         run: |
-          URL="https://${{ env.APP_NAME }}-${{ env.GCP_PROJECT_ID }}.${{ GCP_REGION }}.run.app:{{ env.APP_LISTEN_PORT }}/bot-especialist/answer_query"
+          URL="https://${{ env.APP_NAME }}-${{ env.GCP_PROJECT_ID }}.${{ env.GCP_REGION }}.run.app:{{ env.APP_LISTEN_PORT }}/bot-especialist/answer_query"
           BODY='{"query": "What is the capital of France?"}'
 
           # Make the curl request and capture the HTTP status code
