@@ -40,19 +40,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{  github.ref  }}
           fetch-depth: 0
 
       - name: Set Package Version
         id: set_version
         uses: ./.github/actions/set-version
         with:
-          FILE_PATH: ${{ env.VERSION_FILE }}
+          FILE_PATH: ${{  env.VERSION_FILE  }}
 
       - name: Gcloud Auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          credentials_json: ${{  secrets.GCP_CREDENTIALS  }}
           export_environment_variables: true
 
       - name: Set up Cloud SDK
@@ -61,8 +61,8 @@ jobs:
       - name: Set Workflow Variables
         uses: ./.github/actions/set-env-vars
         with:
-          VERSION: ${{ steps.set_version.outputs.VERSION }}
-          ENVIRONMENT: ${{ env.ENVIRONMENT }}
+          VERSION: ${{  steps.set_version.outputs.VERSION  }}
+          ENVIRONMENT: ${{  env.ENVIRONMENT  }}
 
   docker-build:
     needs: composer-sync
@@ -72,14 +72,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{  github.ref  }}
           fetch-depth: 0
 
       - name: Set Package Version
         id: set_version
         uses: ./.github/actions/set-version
         with:
-          FILE_PATH: ${{ env.VERSION_FILE }}
+          FILE_PATH: ${{  env.VERSION_FILE  }}
 
       - name: Install dependencies
         id: poetry_install
@@ -88,7 +88,7 @@ jobs:
       - name: Gcloud Auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          credentials_json: ${{  secrets.GCP_CREDENTIALS  }}
           export_environment_variables: true
 
       - name: Set up Cloud SDK
@@ -97,8 +97,8 @@ jobs:
       - name: Set Workflow Variables
         uses: ./.github/actions/set-env-vars
         with:
-          VERSION: ${{ steps.set_version.outputs.VERSION }}
-          ENVIRONMENT: ${{ env.ENVIRONMENT }}
+          VERSION: ${{  steps.set_version.outputs.VERSION  }}
+          ENVIRONMENT: ${{  env.ENVIRONMENT  }}
 
       - name: Check App functions with unit tests
         id: check_functionalities
@@ -107,8 +107,8 @@ jobs:
       - name: Docker Build & Push
         uses: ./.github/actions/docker-build-push
         with:
-          BEAM_IMAGE: ${{ env.BEAM_IMAGE }}
-          BEAM_VERSION: ${{ env.BEAM_VERSION }}
+          BEAM_IMAGE: ${{  env.BEAM_IMAGE  }}
+          BEAM_VERSION: ${{  env.BEAM_VERSION  }}
 
 
   environment-setup:
@@ -119,19 +119,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{  github.ref  }}
           fetch-depth: 0
 
       - name: Set Package Version
         id: set_version
         uses: ./.github/actions/set-version
         with:
-          FILE_PATH: ${{ env.VERSION_FILE }}
+          FILE_PATH: ${{  env.VERSION_FILE  }}
 
       - name: Gcloud Auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          credentials_json: ${{  secrets.GCP_CREDENTIALS  }}
           export_environment_variables: true
 
       - name: Set up Cloud SDK
@@ -140,7 +140,7 @@ jobs:
       - name: Provisioning GCP Resources
         run: |
           PROJECT_PATH=$(pwd)
-          cd terraform/environments/${{env.ENVIRONMENT}}
+          cd terraform/environments/${{ env.ENVIRONMENT }}
           terraform init
           terraform plan
           echo y | terraform apply
@@ -165,19 +165,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{  github.ref  }}
           fetch-depth: 0
 
       - name: Set Package Version
         id: set_version
         uses: ./.github/actions/set-version
         with:
-          FILE_PATH: ${{ env.VERSION_FILE }}
+          FILE_PATH: ${{  env.VERSION_FILE  }}
 
       - name: Gcloud Auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          credentials_json: ${{  secrets.GCP_CREDENTIALS  }}
           export_environment_variables: true
 
       - name: Set up Cloud SDK
@@ -185,7 +185,7 @@ jobs:
 
       - name: Check if GCS Document repository were created
         run: |
-          BUCKET_NAME=${{env.REPO_BUCKET_NAME}}
+          BUCKET_NAME=${{ env.REPO_BUCKET_NAME }}
           BUCKET_EXISTS=$(gcloud storage buckets list --filter=$BUCKET_NAME --format="value(name)")
           if [ "$BUCKET_EXISTS" == "$BUCKET_NAME" ]; then
               echo "Bucket '$BUCKET_NAME' exists."
@@ -196,13 +196,13 @@ jobs:
 
       - name: Check pipeline triggering on composer
         run: |
-          DAG_ID=${{env.DAG_ID}}
-          ENVIRONMENT=${{env.COMPOSER_ENV}}
+          DAG_ID=${{ env.DAG_ID }}
+          ENVIRONMENT=${{ env.COMPOSER_ENV }}
           echo "Checking the status of DAG: $DAG_ID..."
 
           # Fetch the list of running tasks for the specified DAG
           STATUS=$(gcloud composer environments run "$ENVIRONMENT" \
-            --location "${{env.GCP_LOCATION}}" list_dag_runs \
+            --location "${{ env.GCP_LOCATION }}" list_dag_runs \
             --project "$PROJECT_ID" \
             --format="json" \
             | jq -r ".[] | select(.dag_id == \"$DAG_ID\") | .state")
@@ -217,9 +217,9 @@ jobs:
 
       - name: Check if alloyDB were created
         run: |
-          INSTANCE_NAME=${{env.ALLOY_DB_INSTANCE_NAME}}
-          REGION=${{env.GCP_REGION}}
-          PROJECT_ID=${{env.GCP_PROJECT_ID}}
+          INSTANCE_NAME=${{ env.ALLOY_DB_INSTANCE_NAME }}
+          REGION=${{ env.GCP_REGION }}
+          PROJECT_ID=${{ env.GCP_PROJECT_ID }}
           echo "Checking if AlloyDB instance '$INSTANCE_NAME' exists in region '$REGION'..."
 
             # List instances and filter by name
@@ -237,9 +237,9 @@ jobs:
 
       - name: Check if API Container were deployed on Cloud run
         run: |
-          PROJECT_ID=${{env.GCP_PROJECT_ID}}
-          SERVICE_NAME=${{env.APP_NAME}}
-          REGION=${{env.GCP_REGION}}
+          PROJECT_ID=${{ env.GCP_PROJECT_ID }}
+          SERVICE_NAME=${{ env.APP_NAME }}
+          REGION=${{ env.GCP_REGION }}
 
           # List Cloud Run services and filter by the specified service name
            EXISTS=$(gcloud run services list \
@@ -256,7 +256,7 @@ jobs:
 
       - name: Check if API Container is reachable
         run: |
-          URL="https://${{env.APP_NAME}}-${{env.GCP_PROJECT_ID}}.${{GCP_REGION}}.run.app:{{env.APP_LISTEN_PORT}}/bot-especialist/answer_query"
+          URL="https://${{ env.APP_NAME }}-${{ env.GCP_PROJECT_ID }}.${{ GCP_REGION }}.run.app:{{ env.APP_LISTEN_PORT }}/bot-especialist/answer_query"
           BODY='{"query": "What is the capital of France?"}'
 
           # Make the curl request and capture the HTTP status code
@@ -274,7 +274,7 @@ jobs:
 
       - name: Check if Dialogue Database were created
         run: |
-          DATABASE_NAME=${{env.DIALOGUE_DB_NAME}}
+          DATABASE_NAME=${{ env.DIALOGUE_DB_NAME }}
           DATABASE_EXISTS=$(gcloud sql instances list --filter="name=$DATABASE_NAME" --format="value(name)")
 
           if [ "DATABASE_EXISTS" == "$DATABASE_NAME" ]; then
@@ -285,7 +285,7 @@ jobs:
 
       - name: Check if Feedback Database were created
         run: |
-          DATABASE_NAME=${{env.FEEDBACK_DB_NAME}}
+          DATABASE_NAME=${{ env.FEEDBACK_DB_NAME }}
           DATABASE_EXISTS=$(gcloud sql instances list --filter="name=$DATABASE_NAME" --format="value(name)")
 
           if [ "DATABASE_EXISTS" == "$DATABASE_NAME" ]; then
