@@ -107,7 +107,7 @@ poetry-install:
 	@$(POETRY) config cache-dir $(HOME)/.cache/pypoetry
 	@$(POETRY) config warnings.export false
 	@$(POETRY) lock -n && $(POETRY) export --without-hashes --output=requirements.txt
-	@$(POETRY) install -n
+	@$(POETRY) install
 	@mkdir -p src/bot_especialist/experiments/.pkg
 	@cp requirements.txt src/bot_especialist/experiments/.pkg/
 	@printf "[Makefile] - Poetry installation and setup complete.\n\n"
@@ -120,7 +120,7 @@ poetry-update:
 .PHONY: pre-commit-install
 pre-commit-install:
 	@sudo apt install python3.9-distutils
-	@$(POETRY) add pre-commit
+	@$(POETRY) add pre-commit=
 	@$(POETRY) run pre-commit install
 	@printf "[Makefile] - Pre-commit hooks installed.\n\n"
 

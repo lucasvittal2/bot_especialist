@@ -17,7 +17,7 @@ The ultimate goal is to create an application that serves as an intelligent assi
 
 
 def get_version():
-    with open("./bot_especialist/__init__.py") as f:
+    with open("src/bot_especialist/__init__.py") as f:
         init_contents = f.read()
     version_match = re.search(
         r'^__version__\s*=\s*[\'"]([^\'"]+)[\'"]', init_contents, re.MULTILINE
