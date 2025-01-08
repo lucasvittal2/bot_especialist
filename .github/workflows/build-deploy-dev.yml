@@ -18,7 +18,7 @@ env:
   ENVIRONMENT: "dev"
   BEAM_VERSION: "2.59.0"
   BEAM_IMAGE: "apache/beam_python3.11_sdk"
-  VERSION_FILE: 'src/bot_especialist/__init__.py'
+  VERSION_FILE: './bot_especialist/__init__.py'
   PYTHON_IMAGE: "python:3.9"
   DAG_ID: "testing_pipeline"
   COMPOSER_ENV: "ingestion-pipeline"
@@ -150,7 +150,7 @@ jobs:
         run: |
           echo "Uploading DAGs scripts to GCS DAGs path
           DAGS_FOLDER=$(terraform output dags_bucket_folder")
-          gcloud storage cp -r "src/bot_especialist/pipelines/airflow/DAGs" $DAGS_FOLDER
+          gcloud storage cp -r "./bot_especialist/pipelines/airflow/DAGs" $DAGS_FOLDER
           if [#$ -eq 0]; then
           echo "Uploading done successfully !"
           else
