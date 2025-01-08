@@ -113,7 +113,7 @@ jobs:
 
   provisioning-setup:
     needs: docker-build
-    runs-on: acer-Aspire-A315-23
+    runs-on: self-hosted
     environment: dev
     steps:
       - name: Checkout repository
@@ -159,7 +159,7 @@ jobs:
 
   heath-checks:
     needs: provisioning-setup
-    runs-on: acer-Aspire-A315-23
+    runs-on: self-hosted
     environment: dev
     steps:
       - name: Checkout repository
