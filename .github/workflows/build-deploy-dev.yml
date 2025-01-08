@@ -65,7 +65,7 @@ jobs:
           ENVIRONMENT: ${{  env.ENVIRONMENT  }}
 
   docker-build:
-    needs: composer-sync
+    needs: environment-sync
     runs-on: self-hosted
     environment: dev
     steps:
