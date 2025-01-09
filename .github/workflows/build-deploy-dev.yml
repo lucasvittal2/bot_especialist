@@ -31,6 +31,7 @@ env:
   APP_LISTEN_PORT: "8090"
   DIALOGUE_DB_NAME: "dialogue-database"
   FEEDBACK_DB_NAME: "feedback-database"
+  IMAGE_URL: "us-central1-docker.pkg.dev/bot-especialist-dev/bot-especialist/document-ingestion-pipelines@sha256:56269a4848a47c82d689a6672aff0d6bc7b097e8c1d8f1ad0b137e7f8b83897d"
 
 jobs:
   environment-sync:
@@ -137,14 +138,6 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Provisioning GCP Resources
-        run: |
-          PROJECT_PATH=$(pwd)
-          cd terraform/environments/${{ env.ENVIRONMENT }}
-          terraform init
-          terraform plan
-          terraform apply -auto-approve
-          cd $PROJECT_PATH
 
       - name: Upload Dependencies to GCP
         run: |
@@ -157,139 +150,13 @@ jobs:
           echo "Something went wrong, check logs above."
           fi
 
-  heath-checks:
-    needs: provisioning-setup
-    runs-on: self-hosted
-    environment: dev
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{  github.ref  }}
-          fetch-depth: 0
-
-      - name: Set Package Version
-        id: set_version
-        uses: ./.github/actions/set-version
-        with:
-          FILE_PATH: ${{  env.VERSION_FILE  }}
-
-      - name: Gcloud Auth
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{  secrets.GCP_CREDENTIALS  }}
-          export_environment_variables: true
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Check if GCS Document repository were created
+      - name: deploy Container to Cloud run
         run: |
-          BUCKET_NAME=${{ env.REPO_BUCKET_NAME }}
-          BUCKET_EXISTS=$(gcloud storage buckets list --filter=$BUCKET_NAME --format="value(name)")
-          if [ "$BUCKET_EXISTS" == "$BUCKET_NAME" ]; then
-              echo "Bucket '$BUCKET_NAME' exists."
+          IMAGE_URL=${{env.IMAGE_URL}}
+          echo "Deploying image ${IMAGE_URL} to cloud run..."
+          gcloud run deploy ${{env.APP_NAME}} --image $IMAGE_URL
+          if [#$ -eq 0]; then
+          echo "Uploading done successfully !"
           else
-              echo "Bucket '$BUCKET_NAME' does not exist or has not been created."
-              exit 1
-          fi
-
-      - name: Check pipeline triggering on composer
-        run: |
-          DAG_ID=${{ env.DAG_ID }}
-          ENVIRONMENT=${{ env.COMPOSER_ENV }}
-          echo "Checking the status of DAG: $DAG_ID..."
-
-          # Fetch the list of running tasks for the specified DAG
-          STATUS=$(gcloud composer environments run "$ENVIRONMENT" \
-            --location "${{ env.GCP_LOCATION }}" list_dag_runs \
-            --project "$PROJECT_ID" \
-            --format="json" \
-            | jq -r ".[] | select(.dag_id == \"$DAG_ID\") | .state")
-
-          # Check if the DAG is running
-          if [[ "$STATUS" == "running" ]]; then
-            echo "The DAG '$DAG_ID' is currently running."
-          else
-            echo "The DAG '$DAG_ID' is NOT running. Current state: $STATUS"
-          fi
-            - name: Check pipeline triggering on composer
-
-      - name: Check if alloyDB were created
-        run: |
-          INSTANCE_NAME=${{ env.ALLOY_DB_INSTANCE_NAME }}
-          REGION=${{ env.GCP_REGION }}
-          PROJECT_ID=${{ env.GCP_PROJECT_ID }}
-          echo "Checking if AlloyDB instance '$INSTANCE_NAME' exists in region '$REGION'..."
-
-            # List instances and filter by name
-            EXISTS=$(gcloud alloydb instances list \
-              --project="$PROJECT_ID" \
-              --region="$REGION" \
-              --format="value(name)" \
-              | grep -w "$INSTANCE_NAME")
-
-            if [[ -n "$EXISTS" ]]; then
-              echo "AlloyDB instance '$INSTANCE_NAME' exists."
-            else
-              echo "AlloyDB instance '$INSTANCE_NAME' does NOT exist."
-            fi
-
-      - name: Check if API Container were deployed on Cloud run
-        run: |
-          PROJECT_ID=${{ env.GCP_PROJECT_ID }}
-          SERVICE_NAME=${{ env.APP_NAME }}
-          REGION=${{ env.GCP_REGION }}
-
-          # List Cloud Run services and filter by the specified service name
-           EXISTS=$(gcloud run services list \
-             --project="$PROJECT_ID" \
-             --region="$REGION" \
-             --format="value(metadata.name)" \
-             | grep -w "$SERVICE_NAME")
-
-           if [[ -n "$EXISTS" ]]; then
-             echo "Cloud Run service '$SERVICE_NAME' exists and is deployed."
-           else
-             echo "Cloud Run service '$SERVICE_NAME' does NOT exist or is not deployed."
-           fi
-
-      - name: Check if API Container is reachable
-        run: |
-          URL="https://${{ env.APP_NAME }}-${{ env.GCP_PROJECT_ID }}.${{ env.GCP_REGION }}.run.app:{{ env.APP_LISTEN_PORT }}/bot-especialist/answer_query"
-          BODY='{"query": "What is the capital of France?"}'
-
-          # Make the curl request and capture the HTTP status code
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-            -H "Content-Type: application/json" \
-            -d "$BODY" \
-            "$URL")
-
-          # Check if the status code is 200
-          if [ "$HTTP_STATUS" -eq 200 ]; then
-              echo "Request successful. Status code: 200"
-          else
-              echo "Request failed. Status code: $HTTP_STATUS"
-          fi
-
-      - name: Check if Dialogue Database were created
-        run: |
-          DATABASE_NAME=${{ env.DIALOGUE_DB_NAME }}
-          DATABASE_EXISTS=$(gcloud sql instances list --filter="name=$DATABASE_NAME" --format="value(name)")
-
-          if [ "DATABASE_EXISTS" == "$DATABASE_NAME" ]; then
-              echo "Cloud SQL instance '$DATABASE_NAME' exists."
-          else
-              echo "Cloud SQL instance '$DATABASE_NAME' does not exist."
-          fi
-
-      - name: Check if Feedback Database were created
-        run: |
-          DATABASE_NAME=${{ env.FEEDBACK_DB_NAME }}
-          DATABASE_EXISTS=$(gcloud sql instances list --filter="name=$DATABASE_NAME" --format="value(name)")
-
-          if [ "DATABASE_EXISTS" == "$DATABASE_NAME" ]; then
-              echo "Cloud SQL instance '$DATABASE_NAME' exists."
-          else
-              echo "Cloud SQL instance '$DATABASE_NAME' does not exist."
+          echo "Something went wrong, check logs above."
           fi
