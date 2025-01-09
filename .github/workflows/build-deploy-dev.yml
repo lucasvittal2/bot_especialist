@@ -24,6 +24,7 @@ env:
   COMPOSER_ENV: "ingestion-pipeline"
   GCP_PROJECT_ID : "680560386191"
   REPO_BUCKET_NAME: "pdf-repository-dev-680560386191"
+  COMPOSER_BUCKET_NAME: "us-central1-ingestion-pipel-2eada9cf-bucket"
   GCP_REGION: "us-central1"
   GCP_LOCATION: "US"
   ALLOY_DB_INSTANCE_NAME: "cluster-us-central1"
@@ -141,8 +142,8 @@ jobs:
 
       - name: Upload Dependencies to GCP
         run: |
-          echo "Uploading DAGs scripts to GCS DAGs path
-          DAGS_FOLDER=$(terraform output dags_bucket_folder")
+          echo "Uploading DAGs scripts to GCS DAGs path"
+          DAGS_FOLDER="${{env.COMPOSER_BUCKET_NAME}/dags"
           gcloud storage cp -r "src/bot_especialist/pipelines/airflow/DAGs" $DAGS_FOLDER"
           if [#$ -eq 0]; then
           echo "Uploading done successfully !"
