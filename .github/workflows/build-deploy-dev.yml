@@ -143,7 +143,7 @@ jobs:
       - name: Upload Dependencies to GCP
         run: |
           echo "Uploading DAGs scripts to GCS DAGs path"
-          DAGS_FOLDER="${{env.COMPOSER_BUCKET_NAME}}/dags"
+          DAGS_FOLDER="gs://${{env.COMPOSER_BUCKET_NAME}}/dags"
           gcloud storage cp -r "src/bot_especialist/pipelines/airflow/DAGs" "$DAGS_FOLDER"
           if [ $? -eq 0 ]; then
             echo "Uploading done successfully!"
