@@ -113,7 +113,7 @@ jobs:
           BEAM_VERSION: ${{  env.BEAM_VERSION  }}
 
 
-  provisioning-setup:
+  deploy-to-gcp:
     needs: docker-build
     runs-on: self-hosted
     environment: dev
