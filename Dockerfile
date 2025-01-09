@@ -39,5 +39,5 @@ ENV PYTHONPATH="/bot_especialist:${PYTHONPATH}"
 # Verify installation (this ensures the module was installed correctly)
 RUN python -c "import bot_especialist; print(bot_especialist.__file__)"
 
-EXPOSE 8080
-CMD ["uvicorn", "bot_especialist.app.api:bot_api", "--host", "0.0.0.0", "--port", "8080"]
+EXPOSE 8090
+CMD ["uvicorn", "bot_especialist.app.api:bot_api", "--host", "0.0.0.0", "--port", "8090"]
