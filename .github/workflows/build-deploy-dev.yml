@@ -155,7 +155,7 @@ jobs:
         run: |
           IMAGE_URL=${{env.IMAGE_URL}}
           echo "Deploying image ${IMAGE_URL} to cloud run..."
-          gcloud run deploy ${{env.APP_NAME}} --image $IMAGE_URL --region ${{env.GCP_REGION}} --set-env-vars PORT=${{env.APP_LISTEN_PORT}}
+          gcloud run deploy ${{env.APP_NAME}} --image $IMAGE_URL --region ${{env.GCP_REGION}}
           if [#$ -eq 0]; then
           echo "Uploading done successfully !"
           else
