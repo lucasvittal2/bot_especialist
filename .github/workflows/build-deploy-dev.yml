@@ -144,7 +144,7 @@ jobs:
         run: |
           echo "Uploading DAGs scripts to GCS DAGs path"
           DAGS_FOLDER="gs://${{env.COMPOSER_BUCKET_NAME}}/dags"
-          gcloud storage cp -r "src/bot_especialist/pipelines/airflow/DAGs" "$DAGS_FOLDER"
+          gcloud storage cp -r "src/bot_especialist/pipelines/airflow/DAGs/*" "$DAGS_FOLDER"
           if [ $? -eq 0 ]; then
             echo "Uploading done successfully!"
           else
@@ -155,7 +155,7 @@ jobs:
         run: |
           IMAGE_URL=${{env.IMAGE_URL}}
           echo "Deploying image ${IMAGE_URL} to cloud run..."
-          gcloud run deploy ${{env.APP_NAME}} --image $IMAGE_URL --region ${{env.GCP_REGION}}
+          gcloud run deploy ${{env.APP_NAME}} --image $IMAGE_URL --region ${{env.GCP_REGION}} --set-env-vars PORT=${{env.APP_LISTEN_PORT}}
           if [#$ -eq 0]; then
           echo "Uploading done successfully !"
           else
