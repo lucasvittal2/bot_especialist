@@ -144,11 +144,11 @@ jobs:
         run: |
           echo "Uploading DAGs scripts to GCS DAGs path"
           DAGS_FOLDER="${{env.COMPOSER_BUCKET_NAME}}/dags"
-          gcloud storage cp -r "src/bot_especialist/pipelines/airflow/DAGs" $DAGS_FOLDER"
-          if [#$ -eq 0]; then
-          echo "Uploading done successfully !"
+          gcloud storage cp -r "src/bot_especialist/pipelines/airflow/DAGs" "$DAGS_FOLDER"
+          if [ $? -eq 0 ]; then
+            echo "Uploading done successfully!"
           else
-          echo "Something went wrong, check logs above."
+            echo "Something went wrong, check logs above."
           fi
 
       - name: deploy Container to Cloud run
