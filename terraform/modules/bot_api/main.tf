@@ -37,6 +37,7 @@ resource "google_sql_database_instance" "dialogue_database" {
   project = var.project_name
   database_version = var.postgres_version
   region           = var.region
+  deletion_protection = false
 
   settings {
     # Second-generation instance tiers are based on the machine
@@ -51,6 +52,7 @@ resource "google_sql_database_instance" "feedback_database" {
   database_version = var.postgres_version
   project = var.project_name
   region           = var.region
+  deletion_protection = false
 
   settings {
     # Second-generation instance tiers are based on the machine
