@@ -11,6 +11,12 @@ python = "^3.9"
 pre-commit = "^4.0.1"
 fastapi = "^0.115.6"
 uvicorn = "^0.34.0"
+cloud-sql-python-connector = "^1.16.0"
+pymysql = "^1.1.1"
+sqlalchemy = "^2.0.37"
+pg8000 = "^1.31.2"
+pydantic = "^2.10.5"
+pyyaml = "^6.0.2"
 
 
 [build-system]
