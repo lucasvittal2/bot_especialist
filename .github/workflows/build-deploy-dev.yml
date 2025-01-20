@@ -18,7 +18,7 @@ env:
   PYTHON_IMAGE: "python:3.9"
 
 jobs:
-  composer-sync:
+  environment-sync:
     runs-on: self-hosted
     environment: dev
     steps:
@@ -94,3 +94,41 @@ jobs:
         with:
           BEAM_IMAGE: ${{ env.BEAM_IMAGE }}
           BEAM_VERSION: ${{ env.BEAM_VERSION }}
+
+
+  environment-setup:
+    needs: docker-build
+    runs-on: acer-Aspire-A315-23
+    environment: dev
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Set Package Version
+        id: set_version
+        uses: ./.github/actions/set-version
+        with:
+          FILE_PATH: ${{ env.VERSION_FILE }}
+
+      - name: Gcloud Auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          export_environment_variables: true
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set Workflow Variables
+        uses: ./.github/actions/set-env-args
+        with:
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
+          ENVIRONMENT: ${{ env.ENVIRONMENT }}
+
+        run: |
+          terraform init
+          terraform plan
+          terraform apply3

@@ -105,7 +105,6 @@ poetry-install:
 	@$(POETRY) config virtualenvs.create true
 	@$(POETRY) config installer.parallel true
 	@$(POETRY) config cache-dir $(HOME)/.cache/pypoetry
-	@$(POETRY) config warnings.export false
 	@$(POETRY) lock -n && $(POETRY) export --without-hashes --output=requirements.txt
 	@$(POETRY) install -n
 	@mkdir -p src/bot_especialist/experiments/.pkg
