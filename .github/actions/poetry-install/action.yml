@@ -19,8 +19,8 @@ runs:
 
     - name: Install dependencies
       run: |
-        mkdir -p $HOME/.cache/pypoetry/virtualenvs/
-        chmod -R 777 $HOME/.cache/pypoetry/virtualenvs/
+        python -m venv wfenv  # Create a virtual environment
+        source wfenv/bin/activate
         curl -sSL https://install.python-poetry.org | python3 -
         echo "${HOME}/.local/bin" >> $GITHUB_PATH
         poetry --version
