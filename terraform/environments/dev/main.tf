@@ -1,28 +1,10 @@
-module "ingestion_pipeline" {
-  source                     = "../../modules/ingestion_pipeline"
-  environment                = "dev"
-  project_name                   = "bot-especialist-dev"
-  region                     = "us-central1"
-  service_account_id         = "custom-service-account-dev"
-  location = "US"
-  project_id = "680560386191"
-  trigger_topic_name = "ingestion-pipeline-dev"
-  composer_image_version = "composer-2.10.1-airflow-2.10.2"
-  composer_env_name = "ingestion-pipeline"
-  bucket_name= "pdf-repository-dev-680560386191"
-
-}
-
-
 module "alloydb_central" {
   source  = "GoogleCloudPlatform/alloy-db/google"
   version = "~> 3.0"
-
   cluster_id       = "cluster-us-central1"
   cluster_location = "us-central1"
-  project_id       = 680560386191
-
-  network_self_link           = "projects/680560386191/global/networks/simple-adb"
+  project_id       = "the-bot-specialist-dev"
+  network_self_link = "projects/the-bot-specialist-dev/global/networks/simple-adb-bot"
 
 
   automated_backup_policy = {
@@ -59,11 +41,11 @@ module "alloydb_central" {
 module "bot_api" {
   source           = "../../modules/bot_api"
   app_name         = "testing-dev"
-  project_name     = "bot-especialist-dev"
-  project_id       = "680560386191"
+  project_name     = "the-bot-specialist-dev"
+  project_id       = "150030916493"
   region           = "us-central1"
-  container_image = "us-central1-docker.pkg.dev/bot-especialist-dev/bot-especialist/document-ingestion-pipelines@sha256:56269a4848a47c82d689a6672aff0d6bc7b097e8c1d8f1ad0b137e7f8b83897d"
-  #change later, the current one is just for test
+  registry_repo_name = "bot-especialist-repo"
+  container_image = "us-central1-docker.pkg.dev/the-bot-specialist-dev/bot-specialist-repov1/bot-specialist-dev:v1"
   feedback_db_name = "feedback-database"
   dialogue_db_name = "dialogue-database"
   postgres_version = "POSTGRES_15"

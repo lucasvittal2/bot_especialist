@@ -1,8 +1,8 @@
 resource "google_cloud_run_v2_service" "default" {
   name     = var.app_name
+  deletion_protection=false
   location = var.region
   project  = var.project_name
-  deletion_protection = false
   ingress = "INGRESS_TRAFFIC_ALL"
 
   template {
@@ -32,31 +32,31 @@ resource "google_cloud_run_v2_service" "default" {
 
 # create Transaction Databases
 
-resource "google_sql_database_instance" "dialogue_database" {
-  name             = var.dialogue_db_name
-  project = var.project_name
-  database_version = var.postgres_version
-  region           = var.region
-  deletion_protection = false
-
-  settings {
-    # Second-generation instance tiers are based on the machine
-    # type. See argument reference below.
-    tier = var.db_instance_type
-  }
-}
-
-
-resource "google_sql_database_instance" "feedback_database" {
-  name             = var.feedback_db_name
-  database_version = var.postgres_version
-  project = var.project_name
-  region           = var.region
-  deletion_protection = false
-
-  settings {
-    # Second-generation instance tiers are based on the machine
-    # type. See argument reference below.
-    tier = var.db_instance_type
-  }
-}
+# resource "google_sql_database_instance" "dialogue-database" {
+#   name             = var.dialogue_db_name
+#   project = var.project_name
+#   database_version = var.postgres_version
+#   region           = var.region
+#   deletion_protection=false
+#
+#   settings {
+#     # Second-generation instance tiers are based on the machine
+#     # type. See argument reference below.
+#     tier = var.db_instance_type
+#   }
+#
+#
+# resource "google_sql_database_instance" "feedback-database" {
+#   name             = var.feedback_db_name
+#   database_version = var.postgres_version
+#   project = var.project_name
+#   region           = var.region
+#
+#   deletion_protection=false
+#
+#   settings {
+#     # Second-generation instance tiers are based on the machine
+#     # type. See argument reference below.
+#     tier = var.db_instance_type
+#   }
+# }

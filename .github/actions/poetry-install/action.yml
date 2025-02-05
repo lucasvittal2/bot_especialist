@@ -1,4 +1,3 @@
----
 name: Poetry Install
 description: Poetry install dependencies
 
@@ -20,9 +19,10 @@ runs:
 
     - name: Install dependencies
       run: |
+        python -m venv wfenv  # Create a virtual environment
+        source wfenv/bin/activate
         curl -sSL https://install.python-poetry.org | python3 -
         echo "${HOME}/.local/bin" >> $GITHUB_PATH
         poetry --version
-        poetry config virtualenvs.create false
         poetry install --no-interaction --no-ansi
       shell: bash
