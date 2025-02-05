@@ -156,6 +156,7 @@ destroy_gcp_infra(){
   cd $PROJECT_PATH
 }
 
+# shellcheck disable=SC2120
 set_args() {
   echo "Uso: $0 --env <ENV> --mode <MODE> --python-container-image <IMAGE> --registry-repo-name <REPO> --container-image <CONTAINER> --project-id <PROJECT>"
   echo ""

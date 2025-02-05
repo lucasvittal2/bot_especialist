@@ -30,10 +30,10 @@ runs:
     - name: Build and Push Docker Image
       run:  |
             chmod +x .github/bootstrap/provisioning.sh
-            bash .github/bootstrap/provisioning.sh \
+            .github/bootstrap/provisioning.sh \
             --env "${{ inputs.ENVIRONMENT }}" \
             --mode "CREATE" \
-            --python-container-image "${{ inputs.PYTHON_IMAGE }}" \
+            --python-container-image "${{ inputs.PYTHON_IMAGE }}"  \
             --registry-repo-name "${{ inputs.REGISTRY_REPO_NAME }}" \
             --container-image "${{ inputs.CONTAINER_IMAGE }}" \
             --project-id "${{ inputs.PROJECT_ID }}"
