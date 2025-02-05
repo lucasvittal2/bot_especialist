@@ -20,7 +20,8 @@ runs:
 
     - name: Install dependencies
       run: |
-        curl -sSL https://install.python-poetry.org | python3 -
+        alias python=/usr/bin/python3.9
+        curl -sSL https://install.python-poetry.org | python -
         echo "${HOME}/.local/bin" >> $GITHUB_PATH
         poetry --version
         poetry config virtualenvs.create false
