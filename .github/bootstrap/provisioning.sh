@@ -203,20 +203,7 @@ done
 }
 
 # Inicializa variáveis
-ENV=""
-MODE=""
-PYTHON_CONTAINER_IMAGE=""
-REPOSITORY_NAME=""
-CONTAINER_IMAGE=""
-PROJECT_ID=""
-
-
-export ENV="dev"
-export MODE=$1
-export PYTHON_CONTAINER_IMAGE="python:3.9"
-export CONTAINER_IMAGE="bot-specialist-$ENV:v1"
-export REPOSITORY_NAME="bot-specialist-repov1"
-export PROJECT_ID="the-bot-specialist-$ENV"
+set_args
 export REGISTRY_URL="us-central1-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY_NAME}/${CONTAINER_IMAGE}"
 
 if [ "$MODE" = "CREATE" ]; then
