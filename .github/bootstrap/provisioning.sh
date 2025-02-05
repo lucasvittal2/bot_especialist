@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 set -e
 build_container() {
     PYTHON_IMAGE=$1
@@ -157,56 +156,61 @@ destroy_gcp_infra(){
 }
 
 # shellcheck disable=SC2120
-set_args() {
-  echo "Uso: $0 --env <ENV> --mode <MODE> --python-container-image <IMAGE> --registry-repo-name <REPO> --container-image <CONTAINER> --project-id <PROJECT>"
-  echo ""
-  echo "Exemplo:"
-  echo "  $0 --env dev --mode CREATE --python-container-image python:3.9 --registry-repo-name repositoryname --container-image bot:v1 --project-id the-bot-specialist"
 
-  while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --env)
-      ENV="$2"
-      shift 2
-      ;;
-    --mode)
-      MODE="$2"
-      shift 2
-      ;;
-    --python-container-image)
-      PYTHON_CONTAINER_IMAGE="$2"
-      shift 2
-      ;;
-    --registry-repo-name)
-      REPOSITORY_NAME="$2"
-      shift 2
-      ;;
-    --container-image)
-      CONTAINER_IMAGE="$2"
-      shift 2
-      ;;
-    --project-id)
-      PROJECT_ID="$2"
-      shift 2
-      ;;
-    *)
-      echo "❌ Opção inválida: $1"
-      usage
-      ;;
-  esac
-done
-
-  # Verifica se todas as variáveis obrigatórias foram definidas
-  if [[ -z "$ENV" || -z "$MODE" || -z "$PYTHON_CONTAINER_IMAGE" || -z "$REPOSITORY_NAME" || -z "$CONTAINER_IMAGE" || -z "$PROJECT_ID" ]]; then
-    echo "❌ Erro: Todos os parâmetros são obrigatórios!"
-    usage
-  fi
-}
 
 # Inicializa variáveis
-set_args
-export REGISTRY_URL="us-central1-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY_NAME}/${CONTAINER_IMAGE}"
+echo "running script with the following parameters:"
+echo ""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  --env)
+    ENV="$2"
+    echo "ENV=$ENV"
+    shift 2
+    ;;
+  --mode)
+    MODE="$2"
+    echo "MODE=$MODE"
+    shift 2
+    ;;
+  --python-container-image)
+    PYTHON_CONTAINER_IMAGE="$2"
+    echo "PYTHON_CONTAINER_IMAGE=$PYTHON_CONTAINER_IMAGE"
+    shift 2
+    ;;
+  --registry-repo-name)
+    REPOSITORY_NAME="$2"
+    echo "REPOSITORY_NAME=$REPOSITORY_NAME"
+    shift 2
+    ;;
+  --container-image)
+    CONTAINER_IMAGE="$2"
+    echo "CONTAINER_IMAGE=$CONTAINER_IMAGE"
+    shift 2
+    ;;
+  --project-id)
+    PROJECT_ID="$2"
+    echo "PROJECT_ID=$PROJECT_ID"
+    shift 2
+    ;;
+  *)
+    echo "❌ Invalid option: $1"
+    usage
+    ;;
+esac
+done
 
+
+## Verifica se todas as variáveis obrigatórias foram definidas
+if [[ -z "$ENV" || -z "$MODE" || -z "$PYTHON_CONTAINER_IMAGE" || -z "$REPOSITORY_NAME" || -z "$CONTAINER_IMAGE" || -z "$PROJECT_ID" ]]; then
+  echo "❌ Erro: Todos os parâmetros são obrigatórios!"
+  usage
+fi
+REGISTRY_URL="us-central1-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY_NAME}/${CONTAINER_IMAGE}"
+echo "REGISTRY_URL=$REGISTRY_URL"
+echo ""
+
+# Main execution
 if [ "$MODE" = "CREATE" ]; then
   build_container "$PYTHON_CONTAINER_IMAGE" "$REGISTRY_URL"
   create_artifact_repo "$REPOSITORY_NAME" "$PROJECT_ID"
