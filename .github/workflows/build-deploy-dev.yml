@@ -83,10 +83,6 @@ jobs:
         with:
           FILE_PATH: ${{  env.VERSION_FILE  }}
 
-      - name: Install dependencies
-        id: poetry_install
-        uses: ./.github/actions/poetry-install
-
       - name: Gcloud Auth
         uses: google-github-actions/auth@v2
         with:
