@@ -1,12 +1,12 @@
 resource "google_compute_network" "default" {
-  name    = "simple-adb"
-  project = "680560386191"
+  name    = "simple-adb-bot"
+  project = "the-bot-specialist-dev"
 }
 
 
 resource "google_compute_global_address" "private_ip_alloc" {
-  project       = "680560386191"
-  name          = "adb-psa"
+  project       = "the-bot-specialist-dev"
+  name          = "adb-psa-bot"
   address_type  = "INTERNAL"
   purpose       = "VPC_PEERING"
   prefix_length = 12

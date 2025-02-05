@@ -48,3 +48,8 @@ variable "db_instance_type" {
   description = "Instance type used to host Cloud SQL Databases"
   type = string
 }
+
+variable "registry_repo_name" {
+  description = "Instance type used to host Cloud SQL Databases"
+  type = string
+}
