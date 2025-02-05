@@ -7,7 +7,7 @@ build_container() {
     echo "Building Container..."
     echo ""
     # Run the Docker build command and capture the exit code
-    sudo docker build \
+    docker build \
       --build-arg PYTHON_IMAGE=$PYTHON_IMAGE \
       -t $CONTAINER_IMAGE .
 
