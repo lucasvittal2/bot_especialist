@@ -16,6 +16,8 @@ env:
   BEAM_IMAGE: "apache/beam_python3.11_sdk"
   VERSION_FILE: 'src/bot_especialist/__init__.py'
   PYTHON_IMAGE: "python:3.9"
+  ARTIFACT_REGISTRY_URI: "us-central1-docker.pkg.dev/the-bot-specialist-dev/bot-specialist-repov1/"
+  DOCKER_IMAGE_TAG: "bot-specialist-dev:v1"
 
 jobs:
   composer-sync:
