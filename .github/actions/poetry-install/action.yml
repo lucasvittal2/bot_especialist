@@ -19,8 +19,8 @@ runs:
 
     - name: Install dependencies
       run: |
-        sudo mkdir -p ~/.cache/pypoetry
-        sudo chmod -R 777 ~/.cache/pypoetry
+        mkdir -p ~/.cache/pypoetry
+        chmod -R 777 ~/.cache/pypoetry
         curl -sSL https://install.python-poetry.org | python3 -
         echo "${HOME}/.local/bin" >> $GITHUB_PATH
         poetry --version
