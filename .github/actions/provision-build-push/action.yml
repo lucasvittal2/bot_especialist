@@ -32,7 +32,8 @@ runs:
       shell: bash
 
     - name: Build and Push Docker Image
-      run: .github/workflows/build-deploy-dev.yml --env "${{ inputs.ENV }}" \
+      run:  .github/bootstrap/provisioning.sh \
+            --env "${{ inputs.ENV }}" \
             --mode "CREATE" \
             --python-container-image "${{ inputs.PYTHON_IMAGE }}" \
             --registry-repo-name "${{ inputs.REGISTRY_REPO_NAME }}" \
