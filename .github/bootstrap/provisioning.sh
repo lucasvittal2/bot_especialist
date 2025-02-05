@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 set -e
 build_container() {
     PYTHON_IMAGE=$1
