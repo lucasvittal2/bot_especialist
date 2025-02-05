@@ -3,20 +3,21 @@ description: Docker Build and Push to Artifact Registry
 
 inputs:
   ENVIRONMENT:
-    description: "Environment (e.g., dev, staging, prod)"
+    description: 'The environment to provision'
     required: true
-
+    default: 'dev'
   PYTHON_IMAGE:
-    description: "Python Docker Image"
+    description: 'Python container image version'
     required: true
+    default: 'python:3.9'
   REGISTRY_REPO_NAME:
-    description: "Name of the container registry repository"
+    description: 'Docker registry repository name'
     required: true
   CONTAINER_IMAGE:
-    description: "Container image name"
+    description: 'Docker container image name'
     required: true
   PROJECT_ID:
-    description: "Google Cloud Project ID"
+    description: 'Google Cloud Project ID'
     required: true
 
 runs:
