@@ -1,0 +1,45 @@
+name: Docker Build and Push
+description: Docker Build and Push to Artifact Registry
+
+inputs:
+  ENV:
+    description: "Environment (e.g., dev, staging, prod)"
+    required: true
+
+  PYTHON_IMAGE:
+    description: "Python Docker Image"
+    required: true
+  REGISTRY_REPO_NAME:
+    description: "Name of the container registry repository"
+    required: true
+  CONTAINER_IMAGE:
+    description: "Container image name"
+    required: true
+  PROJECT_ID:
+    description: "Google Cloud Project ID"
+    required: true
+
+  ENVIRONMENT:
+    description: "env where app is deployed"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Log in to Artifact Registry
+      run: gcloud auth configure-docker us-central1-docker.pkg.dev
+      shell: bash
+
+    - name: Build and Push Docker Image
+      run: ../bootstrap/provisioning.sh --env "${{ inputs.ENV }}" \
+            --mode "CREATE" \
+            --python-container-image "${{ inputs.PYTHON_IMAGE }}" \
+            --registry-repo-name "${{ inputs.REGISTRY_REPO_NAME }}" \
+            --container-image "${{ inputs.CONTAINER_IMAGE }}" \
+            --project-id "${{ inputs.PROJECT_ID }}"
+      shell: bash
+
+    - name: Docker System Prune
+      run: docker system prune -f
+      shell: bash

@@ -12,12 +12,15 @@ on:
 
 env:
   ENVIRONMENT: "dev"
+  PROJECT_ID: "the-bot-specialist-dev"
   BEAM_VERSION: "2.59.0"
   BEAM_IMAGE: "apache/beam_python3.11_sdk"
   VERSION_FILE: 'src/bot_especialist/__init__.py'
   PYTHON_IMAGE: "python:3.9"
-  ARTIFACT_REGISTRY_URI: "us-central1-docker.pkg.dev/the-bot-specialist-dev/bot-specialist-repov1/"
-  DOCKER_IMAGE_TAG: "bot-specialist-dev:v1"
+  CONTAINER_IMAGE: "us-central1-docker.pkg.dev/the-bot-specialist-dev/bot-specialist-repov1/bot-specialist-dev:v1"
+  REGISTRY_REPO_NAME: "bot-especialist-repo"
+
+
 
 jobs:
   composer-sync:
@@ -91,8 +94,11 @@ jobs:
         id: check_functionalities
         uses: ./.github/actions/run-unit-tests
 
-      - name: Docker Build & Push
-        uses: ./.github/actions/docker-build-push
+      - name: Provision, Build & Push
+        uses: ./.github/actions/provision-build-push
         with:
-          BEAM_IMAGE: ${{ env.BEAM_IMAGE }}
-          BEAM_VERSION: ${{ env.BEAM_VERSION }}
+          PYTHON_IMAGE: ${{ env.PYTHON_IMAGE }}
+          REGISTRY_REPO_NAME: ${{ env.REGISTRY_REPO_NAME }}
+          CONTAINER_IMAGE: ${{ env.CONTAINER_IMAGE }}
+          PROJECT_ID: ${{ env.PROJECT_ID }}
+          ENVIRONMENT: ${{ env.ENVIRONMENT }}

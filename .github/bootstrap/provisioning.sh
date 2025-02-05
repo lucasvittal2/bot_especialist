@@ -85,7 +85,8 @@ push_container_gcp(){
 provision_gcp_infra() {
   ENV=$1
   PROJECT_PATH=$(pwd)
-  cd "terraform/environments/$ENV"
+  cd "../../terraform/environments/$ENV"
+  echo "$(pwd)"
   echo ""
   echo "🚀 Startig provisioning GCP infrastructure..."
   echo ""
@@ -135,7 +136,79 @@ provision_gcp_infra() {
 
 }
 
-#set params
+destroy_gcp_infra(){
+  ENV=$1
+  PROJECT_PATH=$(pwd)
+  cd "terraform/environments/$ENV"
+  echo "$(pwd)"
+  echo "🔥 Destroying all provisioned GCP infrastructure..."
+  echo ""
+  terraform destroy --auto-approve
+  ret=$?
+  if [ $ret -ne 0 ]; then
+    echo ""
+    echo "❌  Error when trying to destroy GCP infrastructure"
+    echo ""
+    exit 1
+  fi
+  echo "💥 Destroyed Successfully GCP infrastructure"
+  cd $PROJECT_PATH
+}
+
+set_args() {
+  echo "Uso: $0 --env <ENV> --mode <MODE> --python-container-image <IMAGE> --registry-repo-name <REPO> --container-image <CONTAINER> --project-id <PROJECT>"
+  echo ""
+  echo "Exemplo:"
+  echo "  $0 --env dev --mode CREATE --python-container-image python:3.9 --registry-repo-name repositoryname --container-image bot:v1 --project-id the-bot-specialist"
+
+  while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --env)
+      ENV="$2"
+      shift 2
+      ;;
+    --mode)
+      MODE="$2"
+      shift 2
+      ;;
+    --python-container-image)
+      PYTHON_CONTAINER_IMAGE="$2"
+      shift 2
+      ;;
+    --registry-repo-name)
+      REPOSITORY_NAME="$2"
+      shift 2
+      ;;
+    --container-image)
+      CONTAINER_IMAGE="$2"
+      shift 2
+      ;;
+    --project-id)
+      PROJECT_ID="$2"
+      shift 2
+      ;;
+    *)
+      echo "❌ Opção inválida: $1"
+      usage
+      ;;
+  esac
+done
+
+  # Verifica se todas as variáveis obrigatórias foram definidas
+  if [[ -z "$ENV" || -z "$MODE" || -z "$PYTHON_CONTAINER_IMAGE" || -z "$REPOSITORY_NAME" || -z "$CONTAINER_IMAGE" || -z "$PROJECT_ID" ]]; then
+    echo "❌ Erro: Todos os parâmetros são obrigatórios!"
+    usage
+  fi
+}
+
+# Inicializa variáveis
+ENV=""
+MODE=""
+PYTHON_CONTAINER_IMAGE=""
+REPOSITORY_NAME=""
+CONTAINER_IMAGE=""
+PROJECT_ID=""
+
 
 export ENV="dev"
 export MODE=$1
@@ -153,15 +226,5 @@ if [ "$MODE" = "CREATE" ]; then
 fi
 
 if [ "$MODE" = "DESTROY" ]; then
-  echo "Destroying all provisioned GCP infrastructure..."
-  echo ""
-  terraform destroy --auto-approve
-  ret=$?
-  if [ $ret -ne 0 ]; then
-    echo ""
-    echo "❌  Error when trying to destroy GCP infrastructure"
-    echo ""
-    exit 1
-  fi
-  echo "Destroyed Successfully GCP infrastructure"
+  destroy_gcp_infra "dev"
 fi
