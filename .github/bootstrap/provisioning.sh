@@ -86,7 +86,7 @@ push_container_gcp(){
 provision_gcp_infra() {
   ENV=$1
   PROJECT_PATH=$(pwd)
-  cd "../../terraform/environments/$ENV"
+  cd "terraform/environments/$ENV"
   echo "$(pwd)"
   echo ""
   echo "🚀 Startig provisioning GCP infrastructure..."
