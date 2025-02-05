@@ -24,6 +24,9 @@ runs:
         curl -sSL https://install.python-poetry.org | python -
         echo "${HOME}/.local/bin" >> $GITHUB_PATH
         poetry --version
-        poetry config virtualenvs.create false
+        poetry config virtualenvs.in-project true
+        poetry config virtualenvs.create true
+        poetry config installer.parallel true
+        poetry config cache-dir $(HOME)/.cache/pypoetry
         poetry install --no-interaction --no-ansi
       shell: bash
