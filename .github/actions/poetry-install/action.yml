@@ -1,4 +1,3 @@
----
 name: Poetry Install
 description: Poetry install dependencies
 
@@ -20,12 +19,9 @@ runs:
 
     - name: Install dependencies
       run: |
-        alias python=/usr/bin/python3.9
-        curl -sSL https://install.python-poetry.org | python -
+        curl -sSL https://install.python-poetry.org | python3 -
         echo "${HOME}/.local/bin" >> $GITHUB_PATH
         poetry --version
-        poetry config virtualenvs.in-project true
-        poetry config virtualenvs.create true
-        poetry config installer.parallel true
+        poetry config virtualenvs.create false
         poetry install --no-interaction --no-ansi
       shell: bash

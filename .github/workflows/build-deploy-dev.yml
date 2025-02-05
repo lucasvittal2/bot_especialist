@@ -10,51 +10,34 @@ on:
       - reopened
       - ready_for_review
 
-  push:
-    branches:
-      - update-deploy-workflow
-
 env:
   ENVIRONMENT: "dev"
   BEAM_VERSION: "2.59.0"
   BEAM_IMAGE: "apache/beam_python3.11_sdk"
   VERSION_FILE: 'src/bot_especialist/__init__.py'
   PYTHON_IMAGE: "python:3.9"
-  DAG_ID: "testing_pipeline"
-  COMPOSER_ENV: "ingestion-pipeline"
-  GCP_PROJECT_ID : "680560386191"
-  REPO_BUCKET_NAME: "pdf-repository-dev-680560386191"
-  COMPOSER_BUCKET_NAME: "us-central1-ingestion-pipel-2eada9cf-bucket"
-  GCP_REGION: "us-central1"
-  GCP_LOCATION: "US"
-  ALLOY_DB_INSTANCE_NAME: "cluster-us-central1"
-  APP_NAME: "testing-dev"
-  APP_LISTEN_PORT: "8090"
-  DIALOGUE_DB_NAME: "dialogue-database"
-  FEEDBACK_DB_NAME: "feedback-database"
-  IMAGE_URL: "us-central1-docker.pkg.dev/bot-especialist-dev/bot-especialist/document-ingestion-pipelines@sha256:56269a4848a47c82d689a6672aff0d6bc7b097e8c1d8f1ad0b137e7f8b83897d"
 
 jobs:
-  environment-sync:
+  composer-sync:
     runs-on: self-hosted
     environment: dev
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{  github.ref  }}
+          ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Set Package Version
         id: set_version
         uses: ./.github/actions/set-version
         with:
-          FILE_PATH: ${{  env.VERSION_FILE  }}
+          FILE_PATH: ${{ env.VERSION_FILE }}
 
       - name: Gcloud Auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{  secrets.GCP_CREDENTIALS  }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
           export_environment_variables: true
 
       - name: Set up Cloud SDK
@@ -63,30 +46,34 @@ jobs:
       - name: Set Workflow Variables
         uses: ./.github/actions/set-env-vars
         with:
-          VERSION: ${{  steps.set_version.outputs.VERSION  }}
-          ENVIRONMENT: ${{  env.ENVIRONMENT  }}
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
+          ENVIRONMENT: ${{ env.ENVIRONMENT }}
 
   docker-build:
-    needs: environment-sync
+    needs: composer-sync
     runs-on: self-hosted
     environment: dev
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{  github.ref  }}
+          ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Set Package Version
         id: set_version
         uses: ./.github/actions/set-version
         with:
-          FILE_PATH: ${{  env.VERSION_FILE  }}
+          FILE_PATH: ${{ env.VERSION_FILE }}
+
+      - name: Install dependencies
+        id: poetry_install
+        uses: ./.github/actions/poetry-install
 
       - name: Gcloud Auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{  secrets.GCP_CREDENTIALS  }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
           export_environment_variables: true
 
       - name: Set up Cloud SDK
@@ -95,8 +82,8 @@ jobs:
       - name: Set Workflow Variables
         uses: ./.github/actions/set-env-vars
         with:
-          VERSION: ${{  steps.set_version.outputs.VERSION  }}
-          ENVIRONMENT: ${{  env.ENVIRONMENT  }}
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
+          ENVIRONMENT: ${{ env.ENVIRONMENT }}
 
       - name: Check App functions with unit tests
         id: check_functionalities
@@ -105,55 +92,5 @@ jobs:
       - name: Docker Build & Push
         uses: ./.github/actions/docker-build-push
         with:
-          BEAM_IMAGE: ${{  env.BEAM_IMAGE  }}
-          BEAM_VERSION: ${{  env.BEAM_VERSION  }}
-
-
-  deploy-to-gcp:
-    needs: docker-build
-    runs-on: self-hosted
-    environment: dev
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{  github.ref  }}
-          fetch-depth: 0
-
-      - name: Set Package Version
-        id: set_version
-        uses: ./.github/actions/set-version
-        with:
-          FILE_PATH: ${{  env.VERSION_FILE  }}
-
-      - name: Gcloud Auth
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{  secrets.GCP_CREDENTIALS  }}
-          export_environment_variables: true
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-
-      - name: Upload Dependencies to GCP
-        run: |
-          echo "Uploading DAGs scripts to GCS DAGs path"
-          DAGS_FOLDER="gs://${{env.COMPOSER_BUCKET_NAME}}/dags"
-          gcloud storage cp -r "src/bot_especialist/pipelines/airflow/DAGs/*" "$DAGS_FOLDER"
-          if [ $? -eq 0 ]; then
-            echo "Uploading done successfully!"
-          else
-            echo "Something went wrong, check logs above."
-          fi
-
-      - name: deploy Container to Cloud run
-        run: |
-          IMAGE_URL=${{env.IMAGE_URL}}
-          echo "Deploying image ${IMAGE_URL} to cloud run..."
-          gcloud run deploy ${{env.APP_NAME}} --image $IMAGE_URL --region ${{env.GCP_REGION}} --port ${{env.APP_LISTEN_PORT}}
-          if [#$ -eq 0]; then
-          echo "Uploading done successfully !"
-          else
-          echo "Something went wrong, check logs above."
-          fi
+          BEAM_IMAGE: ${{ env.BEAM_IMAGE }}
+          BEAM_VERSION: ${{ env.BEAM_VERSION }}
