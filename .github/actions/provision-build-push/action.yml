@@ -32,7 +32,9 @@ runs:
       shell: bash
 
     - name: Build and Push Docker Image
-      run:  .github/bootstrap/provisioning.sh \
+      run:  |
+            chmod +x .github/bootstrap/provisioning.sh
+            .github/bootstrap/provisioning.sh \
             --env "${{ inputs.ENV }}" \
             --mode "CREATE" \
             --python-container-image "${{ inputs.PYTHON_IMAGE }}" \
