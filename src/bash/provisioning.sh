@@ -45,7 +45,7 @@ create_artifact_repo() {
 
     # Verifica se o repositório foi criado com sucesso
     if [ $created_artifact_repo -eq 0 ]; then
-      echo "Repository ${REPOSITORY_NAME} created successfully!"
+      echo "✅ Repository ${REPOSITORY_NAME} created successfully!"
     else
       echo ""
       echo "❌ Error creating repository ${REPOSITORY_NAME}."
@@ -53,7 +53,7 @@ create_artifact_repo() {
       exit 1
     fi
   else
-    echo "The repository ${REPOSITORY_NAME} already exists!"
+    echo "⚠️ The repository ${REPOSITORY_NAME} already exists! Not created this repository again."
   fi
 }
 
@@ -68,15 +68,15 @@ push_container_gcp(){
     return 1
   fi
   echo""
-  echo "🚀 Enviando imagem para $REGISTRY_URL..."
+  echo "🚀 Pushing image to $REGISTRY_URL..."
   echo ""
   if docker push "$REGISTRY_URL"; then
     echo ""
-    echo "✅ Imagem enviada com sucesso para $REGISTRY_URL."
+    echo "✅ Image pushed successfully to $REGISTRY_URL."
     echo ""
   else
     echo ""
-    echo "❌ Falha ao enviar a imagem. Verifique o erro acima."
+    echo "❌ Failed to push image to $REGISTRY_URL. Check logs above ! "
     echo ""
     exit 1
   fi
@@ -87,64 +87,81 @@ provision_gcp_infra() {
   PROJECT_PATH=$(pwd)
   cd "terraform/environments/$ENV"
   echo ""
-  echo "🚀 Iniciando provisionamento da infraestrutura no GCP..."
+  echo "🚀 Startig provisioning GCP infrastructure..."
   echo ""
 
   # Verifica se o Terraform está instalado
   if ! command -v terraform &>/dev/null; then
     echo ""
-    echo "❌ Erro: Terraform não encontrado. Instale o Terraform antes de continuar."
+    echo "❌ Error terraform not found. Install terraform before starting this script !"
     echo ""
     exit 1
   fi
 
   # Inicializa o Terraform
-  echo "🔧 Inicializando Terraform..."
+  echo "🔧 Starting Terraform..."
   echo ""
   if ! terraform init; then
     echo ""
-    echo "❌ Erro ao inicializar o Terraform."
+    echo "❌ Error on starting Terraform."
     echo ""
     exit 1
   fi
 
   # Gera o plano de execução
   echo ""
-  echo "📋 Gerando plano de execução..."
+  echo "📋 Generating Execution plan..."
   echo ""
   if ! terraform plan; then
     echo ""
-    echo "❌ Erro ao gerar o plano do Terraform."
+    echo "❌ Got error on planning execution on terraform."
     echo ""
     exit 1
   fi
 
   # Aplica as mudanças automaticamente
   echo ""
-  echo "✅ Aplicando infraestrutura..."
+  echo "✅ Applying infrastructure..."
   echo ""
   if ! terraform apply --auto-approve; then
     echo ""
-    echo "❌ Erro ao aplicar a infraestrutura."
+    echo "❌ Got error when applying the infrastructure."
     echo ""
     exit 1
   fi
 
-  echo "🎉 Infraestrutura provisionada com sucesso!"
+  echo "🎉 GCP Infrastructure provisioned successfully !"
   cd $PROJECT_PATH
 
 }
 
 #set params
-ENV="dev"
-PYTHON_CONTAINER_IMAGE="python:3.9"
-CONTAINER_IMAGE="bot-specialist-$ENV:v1"
-REPOSITORY_NAME="bot-specialist-repov1"
-PROJECT_ID="the-bot-specialist-$ENV"
-REGISTRY_URL="us-central1-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY_NAME}/${CONTAINER_IMAGE}"
 
+export ENV="dev"
+export MODE=$1
+export PYTHON_CONTAINER_IMAGE="python:3.9"
+export CONTAINER_IMAGE="bot-specialist-$ENV:v1"
+export REPOSITORY_NAME="bot-specialist-repov1"
+export PROJECT_ID="the-bot-specialist-$ENV"
+export REGISTRY_URL="us-central1-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY_NAME}/${CONTAINER_IMAGE}"
 
-build_container $PYTHON_CONTAINER_IMAGE $REGISTRY_URL
-create_artifact_repo $REPOSITORY_NAME $PROJECT_ID
-push_container_gcp $REGISTRY_URL $PROJECT_ID
-provision_gcp_infra $ENV
+if [ "$MODE" = "CREATE" ]; then
+  build_container "$PYTHON_CONTAINER_IMAGE" "$REGISTRY_URL"
+  create_artifact_repo "$REPOSITORY_NAME" "$PROJECT_ID"
+  push_container_gcp "$REGISTRY_URL" "$PROJECT_ID"
+  provision_gcp_infra "$ENV"
+fi
+
+if [ "$MODE" = "DESTROY" ]; then
+  echo "Destroying all provisioned GCP infrastructure..."
+  echo ""
+  terraform destroy --auto-approve
+  ret=$?
+  if [ $ret -ne 0 ]; then
+    echo ""
+    echo "❌  Error when trying to destroy GCP infrastructure"
+    echo ""
+    exit 1
+  fi
+  echo "Destroyed Successfully GCP infrastructure"
+fi
