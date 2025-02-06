@@ -1,0 +1,45 @@
+name: Destroy Provinioned resources
+
+on:
+  workflow_dispatch:  # Allows manual trigger from GitHub Actions UI
+    inputs:
+      env:
+        description: "Select the environment (dev, stage, prod)"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - stage
+          - prod
+
+
+
+jobs:
+  example_job:
+    name: Run Example Job
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Print a message
+        run: echo "Workflow triggered manually!"
+
+  terraform_job:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+
+      - name: Destroy resources
+        run: |
+              cd terraform/environments/${{github.event.inputs.env}}
+              terraform destroy --auto-approve
