@@ -12,9 +12,6 @@ on:
           - dev
           - stage
           - prod
-
-
-
 jobs:
   example_job:
     name: Run Example Job
@@ -38,6 +35,10 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: latest
+      - name: Destroy resources
+        run: |
+              cd terraform/environments/${{github.event.inputs.env}}
+              terraform init
 
       - name: Destroy resources
         run: |
