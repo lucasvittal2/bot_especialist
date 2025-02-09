@@ -10,3 +10,9 @@ class AlloyTableConfig(BaseModel):
     content_column: str
     id_column: str
     embedding_column: str
+
+
+class BotConfig(BaseModel):
+    llm_model: str
+    prompt: str
+    sys_instructions: str
