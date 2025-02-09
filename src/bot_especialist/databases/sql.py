@@ -12,7 +12,7 @@ from bot_especialist.models.connections import CloudSQLConnection
 from bot_especialist.utils.tools import read_yaml
 
 
-class SQL:
+class CloudSQL:
     def __init__(self, connection: CloudSQLConnection):
         self.connection_name = connection.connection_name
         self.engine = connection.engine
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     info_conn = configs["CONNECTIONS"]["TEST"]
     conn = CloudSQLConnection(**info_conn)
 
-    cloud_sql = SQL(connection=conn)
+    cloud_sql = CloudSQL(connection=conn)
     query = "SELECT * FROM climate_data;"
     rows = cloud_sql.run_query(query)
     if rows:
