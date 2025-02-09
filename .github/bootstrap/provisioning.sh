@@ -202,17 +202,20 @@ esac
 done
 
 
-## Verifica se todas as variáveis obrigatórias foram definidas
-if [[ -z "$ENV" || -z "$MODE" || -z "$PYTHON_CONTAINER_IMAGE" || -z "$REPOSITORY_NAME" || -z "$CONTAINER_IMAGE" || -z "$PROJECT_ID" ]]; then
-  echo "❌ Erro: Todos os parâmetros são obrigatórios!"
-  usage
-fi
+
+
 REGISTRY_URL="us-central1-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY_NAME}/${CONTAINER_IMAGE}"
 echo "REGISTRY_URL=$REGISTRY_URL"
 echo ""
 
 # Main execution
 if [ "$MODE" = "CREATE" ]; then
+  ## Verifica se todas as variáveis obrigatórias foram definidas
+  if [[ -z "$ENV" || -z "$MODE" || -z "$PYTHON_CONTAINER_IMAGE" || -z "$REPOSITORY_NAME" || -z "$CONTAINER_IMAGE" || -z "$PROJECT_ID" ]]; then
+    echo "❌ Erro: Todos os parâmetros são obrigatórios!"
+    usage
+  fi
+
   build_container "$PYTHON_CONTAINER_IMAGE" "$REGISTRY_URL"
   create_artifact_repo "$REPOSITORY_NAME" "$PROJECT_ID"
   push_container_gcp "$REGISTRY_URL" "$PROJECT_ID"
