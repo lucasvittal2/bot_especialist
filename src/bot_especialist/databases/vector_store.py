@@ -1,13 +1,13 @@
 import asyncio
 import gc
 import logging
-import uuid
+import os
 from typing import Any, List, Union
 
 import aiohttp
 from langchain_core.documents import Document
 from langchain_core.embeddings.embeddings import Embeddings
-from langchain_google_alloydb_pg import AlloyDBEngine, AlloyDBLoader, AlloyDBVectorStore
+from langchain_google_alloydb_pg import AlloyDBEngine, AlloyDBVectorStore
 from langchain_google_vertexai import VertexAIEmbeddings
 
 from bot_especialist.models.configs import AlloyTableConfig
@@ -15,13 +15,18 @@ from bot_especialist.models.connections import AlloyDBConnection
 
 
 class AlloyDB:
-    def __init__(self, connection: AlloyDBConnection, embedding_model: Embeddings):
+    def __init__(
+        self,
+        connection: AlloyDBConnection,
+        embedding_model: Embeddings,
+        openai_key: str,
+    ):
         self.engine: Union[AlloyDBEngine, None] = None
         self.connection = connection
         self.embedding_model = embedding_model
         self.db_schema = connection.db_schema
         self.vector_store: Union[AlloyDBVectorStore, None] = None
-        self.loop = asyncio.get_event_loop()
+        self.openai_key = openai_key
 
     async def __aenter__(self):
         """Async context manager for initializing resources."""
@@ -44,10 +49,9 @@ class AlloyDB:
 
         logging.info("Closed all connections related with AlloyDB.")
 
-    @staticmethod
-    async def __close_all_sessions_and_connections():
+    async def __close_all_sessions_and_connections(self):
         """Close all open aiohttp sessions and their connections."""
-
+        os.environ["OPENAI_API_KEY"] = self.openai_key
         sessions = [
             obj for obj in gc.get_objects() if isinstance(obj, aiohttp.ClientSession)
         ]
@@ -142,59 +146,33 @@ if __name__ == "__main__":
 
     logging.basicConfig(
         level=logging.DEBUG,
-        format="%(asctime)s - [BOT-ESPECIALIST] - %(levelname)s:  %(message)s",
+        format="%(asctime)s - [DOC-INGESTION-PIPELINE] - %(levelname)s:  %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         handlers=[logging.StreamHandler()],
     )
 
     async def main():
         # Load configurations
-        app_config = read_yaml("app-configs.yml")
+        app_config = read_yaml("configs/app-configs.yml")
         connection_config = app_config["CONNECTIONS"]["ALLOYDB"]
         connection = AlloyDBConnection(**connection_config)
 
         # Create embedding model
         embedding_model = VertexAIEmbeddings(
-            model_name="textembedding-gecko@latest", project="bot-especialist-dev"
+            model_name="textembedding-gecko@latest", project=app_config["GCP_PROJECT"]
         )
 
         # Initialize vector store
-        db = AlloyDB(connection, embedding_model)
+        db = AlloyDB(connection, embedding_model, app_config["OPENAI_API_KEY"])
         async with db:
-            table_config = AlloyTableConfig(
-                vector_size=768,
-                metadata_columns=[
-                    "name",
-                    "category",
-                    "price_usd",
-                    "quantity",
-                    "sku",
-                    "image_url",
-                ],
-                metadata_json_column="metadata",
-                id_column="product_id",
-                content_column="description",
-                embedding_column="embed",
-            )
+            table_config = AlloyTableConfig(**app_config["VECTOR_STORE"])
             await db.init_vector_storage_table(
-                table="products", table_config=table_config
+                table="bot-brain", table_config=table_config
             )
 
             # Query vector store
-            query = "I'd like a laptop."
+            query = "What is Data engineering"
             docs = await db.search_documents(query)
             print(docs)
-            descriptions = ["High-performance gaming laptop"]
-            metadata = [
-                {
-                    "name": "Eletronics",
-                    "category": "Super Laptop",
-                    "price_usd": 1500,
-                    "quantity": 10,
-                    "sku": "SKU12445",
-                    "image_url": "",
-                }
-            ]
-            # await db.add_records(table="products", contents=descriptions, metadata=metadata, ids=[50])
 
     asyncio.run(main())
