@@ -1,8 +1,0 @@
-CONNECTIONS:
-  TEST:
-    connection_name: "bot-especialist-dev:us-central1:testdb"
-    ip_address: "34.172.163.6"
-    db_user: "postgres"
-    db_password: "admin"
-    db_name: "postgres"
-    use_private_ip: False
