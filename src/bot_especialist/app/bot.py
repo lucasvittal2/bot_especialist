@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
-from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
+from langchain_community.chat_models import ChatOpenAI
 
 from bot_especialist.models.configs import BotConfig
 
@@ -17,9 +17,10 @@ class OpenAIBotSpecialist:
         contents = []
         metadata_records = []
         for chunk in chunks:
-            content = chunk["text"]
-            pagen_number = chunk["page_number"]
-            source_doc = chunk["page_number"]
+            content = chunk["page_content"]
+            metadata = chunk["metadata"]
+            pagen_number = metadata["page_number"]
+            source_doc = metadata["page_number"]
             contents.append(content)
             metadata_records.append(
                 f"at document '{source_doc}' in page {pagen_number}"
@@ -41,4 +42,4 @@ class OpenAIBotSpecialist:
         answer = chain.invoke(
             {"question": query, "context": context, "metadata": metadata}
         )
-        return answer
+        return answer.content
