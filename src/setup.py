@@ -36,10 +36,20 @@ dependencies = [
     "tiktoken==0.8.0",
     "openai==1.55.3",
     "scikit-learn==1.5.1",
-    "google-cloud-secret-manager==2.20.0",
-    "google-cloud-bigquery==3.26.0",
+    "google-cloud-alloydb-connector==1.7.0",
+    "google-cloud-aiplatform==1.77.0",
+    "cloud-sql-python-connector==1.16.0",
+    "langchain==0.3.18",
+    "langchain-core==0.3.34",
+    "langchain-google-alloydb-pg==0.9.0",
+    "langchain-google-vertexai==2.0.11",
+    "langchain-text-splitters==0.3.6",
+    "langsmith==0.2.11",
     "uvicorn==0.34.0",
     "fastapi==0.115.6",
+    "sqlalchemy==2.0.38",
+    "pg8000==1.31.2",
+    "pandas==2.2.3",
 ]
 
 setuptools.setup(
