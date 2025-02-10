@@ -1,15 +1,19 @@
 #!/bin/bash
-set -x
+
 set -e
 build_container() {
     PYTHON_IMAGE=$1
     CONTAINER_IMAGE=$2
+    PORT=$3
+    ENV=$4
     echo "Building Container..."
     echo ""
     # Run the Docker build command and capture the exit code
     docker build \
-      --build-arg PYTHON_IMAGE=$PYTHON_IMAGE \
-      -t $CONTAINER_IMAGE .
+      --build-arg PYTHON_IMAGE="$PYTHON_IMAGE" \
+      --build-arg PORT="$PORT" \
+      --build-arg GCP_PROJECT="the-bot-specialist-${ENV}" \
+      -t "$CONTAINER_IMAGE" .
 
     # Check if the last command was successful
     if [ $? -eq 0 ]; then
@@ -73,7 +77,7 @@ push_container_gcp(){
   echo ""
   if docker push "$REGISTRY_URL"; then
     echo ""
-    echo "✅ Image pushed successfully to $REGISTRY_URL."
+    echo "🐋 Image pushed successfully to $REGISTRY_URL."
     echo ""
   else
     echo ""
@@ -123,7 +127,7 @@ provision_gcp_infra() {
 
   # Aplica as mudanças automaticamente
   echo ""
-  echo "✅ Applying infrastructure..."
+  echo "✅  Applying infrastructure..."
   echo ""
   if ! terraform apply --auto-approve; then
     echo ""
@@ -156,6 +160,36 @@ destroy_gcp_infra(){
   cd $PROJECT_PATH
 }
 
+deploy_container() {
+  if [ $# -ne 5 ]; then
+    echo "❌ Uso: deploy_container <IMAGE_URL> <LISTEN_PORT> <SERVICE_NAME> <REGION> <ENV>"
+    return 1
+  fi
+
+  local IMAGE_URL="$1"
+  local LISTEN_PORT="$2"
+  local SERVICE_NAME="$3"
+  local REGION="$4"
+  local ENV=$5
+
+
+  SERVICE_ACCOUNT="${ENV}-108@the-bot-specialist-dev.iam.gserviceaccount.com"
+
+
+  echo ""
+  echo "📦 🐳 Deploying container '$SERVICE_NAME' to Cloud Run in region '$REGION'..."
+  echo ""
+
+  if gcloud run deploy "$SERVICE_NAME" --image="$IMAGE_URL" --port="$LISTEN_PORT" --region="$REGION" --service-account "$SERVICE_ACCOUNT"; then
+    echo ""
+    echo "✅  🚢  Container '$SERVICE_NAME' was successfully deployed in '$REGION'!"
+    echo ""
+  else
+    echo "❌ 🚨 Deployment failed. Check logs for details."
+    return 1
+  fi
+}
+
 # shellcheck disable=SC2120
 
 
@@ -184,13 +218,28 @@ while [[ $# -gt 0 ]]; do
     echo "REPOSITORY_NAME=$REPOSITORY_NAME"
     shift 2
     ;;
+  --service-name)
+    SERVICE_NAME="$2"
+    echo "CONTAINER_IMAGE=$CONTAINER_IMAGE"
+    shift 2
+    ;;
   --container-image)
     CONTAINER_IMAGE="$2"
     echo "CONTAINER_IMAGE=$CONTAINER_IMAGE"
     shift 2
     ;;
+  --container-port)
+    CONTAINER_PORT="$2"
+    echo "CONTAINER_PORT $CONTAINER_PORT"
+    shift 2
+    ;;
   --project-id)
     PROJECT_ID="$2"
+    echo "PROJECT_ID=$PROJECT_ID"
+    shift 2
+    ;;
+  --region)
+    REGION="$2"
     echo "PROJECT_ID=$PROJECT_ID"
     shift 2
     ;;
@@ -201,13 +250,6 @@ while [[ $# -gt 0 ]]; do
 esac
 done
 
-
-
-
-REGISTRY_URL="us-central1-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY_NAME}/${CONTAINER_IMAGE}"
-echo "REGISTRY_URL=$REGISTRY_URL"
-echo ""
-
 # Main execution
 if [ "$MODE" = "CREATE" ]; then
   ## Verifica se todas as variáveis obrigatórias foram definidas
@@ -216,10 +258,13 @@ if [ "$MODE" = "CREATE" ]; then
     usage
   fi
 
-  build_container "$PYTHON_CONTAINER_IMAGE" "$REGISTRY_URL"
+  REGISTRY_URL="us-central1-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY_NAME}/${CONTAINER_IMAGE}"
+  build_container "$PYTHON_CONTAINER_IMAGE" "$REGISTRY_URL" "$CONTAINER_PORT" "$ENV"
   create_artifact_repo "$REPOSITORY_NAME" "$PROJECT_ID"
   push_container_gcp "$REGISTRY_URL" "$PROJECT_ID"
   provision_gcp_infra "$ENV"
+  deploy_container "$REGISTRY_URL" "$CONTAINER_PORT" "$SERVICE_NAME" "$REGION" "$ENV"
+
 fi
 
 if [ "$MODE" = "DESTROY" ]; then
