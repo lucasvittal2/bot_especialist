@@ -46,8 +46,7 @@ module "bot_api" {
   region           = "us-central1"
   registry_repo_name = "bot-especialist-repo"
   container_image = "us-central1-docker.pkg.dev/the-bot-specialist-dev/bot-specialist-repov1/bot-specialist-dev:v1"
-  feedback_db_name = "feedback-database"
-  dialogue_db_name = "dialogue-database"
+  track_db_name = "track"
   postgres_version = "POSTGRES_15"
   db_instance_type = "db-f1-micro"
 }
