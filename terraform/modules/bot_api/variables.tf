@@ -29,13 +29,8 @@ variable "container_image" {
 
 
 # Cloud SQL Variables
-variable "feedback_db_name" {
+variable "track_db_name" {
   description = "Database name for feedbacks"
-  type = string
-}
-
-variable "dialogue_db_name" {
-  description = "Database name for dialogues"
   type = string
 }
 
