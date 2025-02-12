@@ -43,6 +43,7 @@ pg8000 = "^1.31.2"
 langchain-community = "^0.3.17"
 fastapi = "^0.115.8"
 types-pytz = "^2025.1.0.20250204"
+google-cloud-logging = "^3.11.4"
 
 [poetry.group.dev.dependencies]
 bandit = "^1.7.7"

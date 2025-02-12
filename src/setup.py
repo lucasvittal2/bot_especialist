@@ -50,6 +50,7 @@ dependencies = [
     "sqlalchemy==2.0.38",
     "pg8000==1.31.2",
     "pandas==2.2.3",
+    "google-cloud-logging==3.11.4",
 ]
 
 setuptools.setup(
