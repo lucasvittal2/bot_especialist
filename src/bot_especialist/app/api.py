@@ -99,7 +99,7 @@ async def answer_query(request: QueryRequest):
     return response
 
 
-@bot_api.post("/items/send_feedback")
+@bot_api.post("/bot-especialist/send_feedback")
 def send_feedback(request: FeedbackRequest):
     try:
         tz_region = APP_CONFIGS["TIME_ZONE"]
