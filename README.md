@@ -52,9 +52,12 @@ Once all prerequisites are met:
      --env  <ENV> \
      --mode "CREATE" \
      --python-container-image "python:3.9" \
-     --registry-repo-name  <REGISTRY_REPOSITORY_NAME> \
-     --container-image "<YOUR-REGION>-docker.pkg.dev/<PROJECT_ID>/<REGISTRY_REPOSITORY_NAME>/doc-ingestion-pipeline-dev:v1" \
-     --project-id "<PROJECT_ID>"
+     --registry-repo-name  <REPOSITORY_NAME> \
+     --container-image "<REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY_NAME>/<IMAGE_TAG>" \
+     --service-name "bot-specialist-api" \
+     --container-port 8090 \
+     --project-id "<PROJECT_ID>" \
+     --region "<REGION>"
    ```
    ⚠️ **Don't forget to replace placeholders with your actual values.**
 
@@ -64,7 +67,15 @@ Once all prerequisites are met:
    https://bot-api-150030916493.us-east1.run.app
    ```
    Keep this base URL safe, as you'll need it to consume the API.
-
+5. Open file at `src/queries/create_track_tables.sql` and copy to clipboard
+6.  Search for cloud SQL and click o track database:
+![img.png](assets/images/cloudsqldb.png)
+7. click on users Tab, then create users credentials according your preference
+![img.png](assets/images/create-credentials.png)
+8. Go to 'Cloud Sql Studio' tab, then use the same credentials to login:
+![img.png](assets/images/studio.png)
+9. Open a new editor then run the query inside `src/queries/create_track_tables.sql` to create track tables
+![img.png](assets/images/createtracktables.png)
 ---
 
 ## 🌐 Consuming the API
