@@ -34,6 +34,7 @@ Before getting started, ensure you have the following prerequisites:
 - Cloud Run and Vertex AI APIs enabled on GCP
 - Terraform installed locally
 - Docker installed locally
+- AlloyDB public ip address of a given instance from cluster (AlloyDB> click on 3 dots in any instance > edit > Enable Public address)
 
 ### 🏃 Setup & Deployment
 Once all prerequisites are met:
@@ -43,7 +44,9 @@ Once all prerequisites are met:
    make init
    ```
 
-2. **Provision the required resources**
+2. Got to `assets/configs/app-configs-example.yml` and replace tags with your parameters, after that rename `app-configs-example.yml` to `app-configs.yml`
+
+3. **Provision the required resources**
    ```shell
    .github/bootstrap/provisioning.sh \
      --env  <ENV> \
@@ -55,7 +58,8 @@ Once all prerequisites are met:
    ```
    ⚠️ **Don't forget to replace placeholders with your actual values.**
 
-3. Once provisioning is complete, you will receive a URL like:
+
+4. Once provisioning is complete, you will receive a URL like:
    ```text
    https://bot-api-150030916493.us-east1.run.app
    ```
