@@ -74,7 +74,9 @@ Once all prerequisites are met:
 ![img.png](assets/images/create-credentials.png)
 8. Go to 'Cloud Sql Studio' tab, then use the same credentials to login:
 ![img.png](assets/images/studio.png)
-9. Open a new editor then run the query inside `src/queries/create_track_tables.sql` to create track tables
+9. Got to 'Databases' tab then Create `bot_specialist` database:
+![img.png](assets/images/createdbsql.png)
+10. Open a new editor then run the query inside `src/queries/create_track_tables.sql` to create track tables
 ![img.png](assets/images/createtracktables.png)
 ---
 
