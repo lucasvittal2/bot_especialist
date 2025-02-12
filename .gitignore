@@ -9,4 +9,4 @@ bot-especialist-3.9/
 /terraform/environments/dev/terraform.tfstate.backup
 /terraform/environments/dev/terraform.tfstate
 .env
-configs/app-configs.yml
+assets/configs/app-configs.yml
