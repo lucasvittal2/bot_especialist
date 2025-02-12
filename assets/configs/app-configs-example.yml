@@ -1,0 +1,46 @@
+GCP_PROJECT: "<PROJECT_ID>"
+GCP_EMBEDDING_MODEL: "textembedding-gecko@latest"
+TIME_ZONE: "<YOUR-TIME-ZONE"
+OPENAI_API_KEY: "<OPENAI_API_KEY>"
+
+BOT:
+  llm_model: "gpt-4o-mini"
+  sys_instructions: "You are a specialized assistant. Your mission is to answer questions based on the provided context and guide the user to verify your answer."
+  prompt: "Answer my question following these steps:\n\nUse the given context to answer: \"{question}\"\nAlways end with \"Thanks for asking!\"\nIf unsure, say \"I don't know\" instead of guessing.\nProvide metadata on where the user can verify the answer.\n\n\nContext:\n{context}\n\nMetadata:\n{metadata}\n\nGeneric Answer Example: This is your answer. You can check the answer in \"xpto.pdf\" (pages 65-66) or \"xyz.pdf\" (pages 9-10)."
+
+CONNECTIONS:
+  TRACK:
+    connection_name: "<PROJECT_ID>:<GCP_REGION>:track"
+    engine: "postgresql"
+    ip_address: "<INSTANCE-PUBLIC-IP-ADDRESS>"
+    db_user: "postgres"
+    db_password: "<PASSWORD>"
+    db_name: "<DATABASE-NAME>"
+    use_private_ip: False
+    plugin: "pg8000"
+
+  ALLOYDB:
+    connection_name: "<PROJECT_ID>:<GCP_REGION>:vector-store-dev"
+    region: "<GCP_REGION>"
+    cluster: "cluster-<GCP_REGION>"
+    instance: "cluster-<GCP_REGION>-instance1"
+    database: "postgres"
+    table_name: "bot-brain"
+    project_id: "<PROJECT_ID>"
+    db_schema: "<ALLOYDB_SCHEMA>"
+    db_host: "<ALLOYDB-INSTANCE-PUBLIC-IP-ADDRESS>"
+    db_user: "<ALLOY-DB-USER>"
+    db_password: "<ALLOYDB-USER-PASSWORD>"
+    db_port: 5432
+    db_name: "postgres"
+    use_private_ip: False
+
+
+VECTOR_STORE:
+  EMBEDDING_MODEL: "textembedding-gecko@latest"
+  vector_size: 768
+  metadata_columns: ["source_doc", "page_number", "topics"]
+  metadata_json_column: "metadata"
+  id_column: "id"
+  content_column: "text"
+  embedding_column: "embedding"
