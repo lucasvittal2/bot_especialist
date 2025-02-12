@@ -1,5 +1,6 @@
 import logging
 from contextlib import contextmanager
+from logging import Logger
 from typing import List, Tuple, Union
 
 import sqlalchemy
@@ -13,7 +14,7 @@ from bot_especialist.utils.tools import read_yaml
 
 
 class CloudSQL:
-    def __init__(self, connection: CloudSQLConnection):
+    def __init__(self, connection: CloudSQLConnection, logger: Logger):
         self.connection_name = connection.connection_name
         self.engine = connection.engine
         self.ip_address = connection.ip_address
@@ -23,6 +24,7 @@ class CloudSQL:
         self.use_private_ip = connection.use_private_ip
         self.plugin = connection.plugin
         self.connector = Connector()
+        self.logger = logger
 
     def __get_connection(self) -> Engine:
         def getconn() -> Connection:
@@ -54,7 +56,7 @@ class CloudSQL:
             transaction.commit()
         except Exception as err:
             transaction.rollback()
-            logging.warning(
+            self.logger.warning(
                 f"Rolled back the transaction on SQL due to the error: {err}."
             )
             raise err
@@ -77,19 +79,23 @@ class CloudSQL:
                 return None
 
         except Exception as err:
-            logging.error(f"Failed to run query on SQL: \n\n{err}\n\n")
+            self.logger.error(f"Failed to run query on SQL: \n\n{err}\n\n")
             raise err
 
 
 # Usage example:
 if __name__ == "__main__":
+    from bot_especialist.utils.app_logging import LoggerHandler
     from bot_especialist.utils.tools import generate_hash
 
+    logger = LoggerHandler(
+        logger_name="TESTING-CLOUD-SQL", logging_type="console"
+    ).get_logger()
     configs = read_yaml("configs/app-configs.yml")
     info_conn = configs["CONNECTIONS"]["TRACK"]
     conn = CloudSQLConnection(**info_conn)
 
-    cloud_sql = CloudSQL(connection=conn)
+    cloud_sql = CloudSQL(conn, logger)
     answer = """
     Data engineering is a set of operations aimed at creating interfaces and mechanisms for the flow and access of information. It involves dedicated specialists known as data engineers who maintain data to ensure it remains available and usable by others. Essentially, data engineers set up and operate the organization’s data infrastructure, preparing it for further analysis by data analysts and scientists.
 

@@ -1,7 +1,7 @@
 import asyncio
 import gc
-import logging
 import os
+from logging import Logger
 from typing import Any, List, Union
 
 import aiohttp
@@ -20,6 +20,7 @@ class AlloyDB:
         connection: AlloyDBConnection,
         embedding_model: Embeddings,
         openai_key: str,
+        logger: Logger,
     ):
         self.engine: Union[AlloyDBEngine, None] = None
         self.connection = connection
@@ -27,6 +28,7 @@ class AlloyDB:
         self.db_schema = connection.db_schema
         self.vector_store: Union[AlloyDBVectorStore, None] = None
         self.openai_key = openai_key
+        self.logger = logger
 
     async def __aenter__(self):
         """Async context manager for initializing resources."""
@@ -47,7 +49,7 @@ class AlloyDB:
         """Async context manager for cleaning up resources."""
         await self.__close_all_sessions_and_connections()
 
-        logging.info("Closed all connections related with AlloyDB.")
+        self.logger.info("Closed all connections related with AlloyDB.")
 
     async def __close_all_sessions_and_connections(self):
         """Close all open aiohttp sessions and their connections."""
@@ -57,26 +59,26 @@ class AlloyDB:
         ]
 
         if not sessions:
-            logging.info("No open ClientSession objects found.")
+            self.logger.info("No open ClientSession objects found.")
             return
 
         for session in sessions:
 
-            logging.info(f"Found ClientSession: {session}")
+            self.logger.info(f"Found ClientSession: {session}")
 
             if not session.closed:
 
                 # Close the session
                 await session.close()
-                logging.info(f"Closed ClientSession: {session} .")
+                self.logger.info(f"Closed ClientSession: {session} .")
 
                 # Close its connector explicitly if still open
                 connector = session.connector
                 if connector and not connector.closed:
                     await connector.close()
-                    logging.info(f"Closed Connector: {connector} .")
+                    self.logger.info(f"Closed Connector: {connector} .")
             else:
-                logging.info(f"ClientSession {session} is already closed.")
+                self.logger.info(f"ClientSession {session} is already closed.")
 
     async def init_vector_storage_table(
         self, table: str, table_config: AlloyTableConfig
@@ -94,9 +96,9 @@ class AlloyDB:
                 metadata_columns=table_config.metadata_columns,
                 metadata_json_column=table_config.metadata_json_column,
             )
-            logging.info(f"Initialized vector storage table: {table}")
+            self.logger.info(f"Initialized vector storage table: {table}")
         except Exception as err:
-            logging.error(f"Failed to initialize vector storage: {err}")
+            self.logger.error(f"Failed to initialize vector storage: {err}")
             raise
 
     async def add_records(
@@ -117,9 +119,9 @@ class AlloyDB:
             ]
 
             await self.vector_store.aadd_texts(contents, metadatas=metadata, ids=ids)
-            logging.info(f"Added {len(documents)} documents successfully.")
+            self.logger.info(f"Added {len(documents)} documents successfully.")
         except Exception as err:
-            logging.error(f"Failed to add documents: {err}")
+            self.logger.error(f"Failed to add documents: {err}")
             raise err
 
     async def search_documents(self, query: str, filter: str = "") -> List[Document]:
@@ -130,40 +132,37 @@ class AlloyDB:
             )
         try:
             docs = await self.vector_store.asimilarity_search(query, filter=filter)
-            logging.info(f"Found {len(docs)} documents for query: {query}")
+            self.logger.info(f"Found {len(docs)} documents for query: {query}")
             return docs
         except Exception as err:
-            logging.error(f"Failed to search documents: {err}")
+            self.logger.error(f"Failed to search documents: {err}")
             raise err
 
 
 if __name__ == "__main__":
     import warnings
 
+    from bot_especialist.utils.app_logging import LoggerHandler
     from bot_especialist.utils.tools import read_yaml
 
     warnings.filterwarnings("ignore")
 
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s - [DOC-INGESTION-PIPELINE] - %(levelname)s:  %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        handlers=[logging.StreamHandler()],
-    )
-
     async def main():
+
         # Load configurations
         app_config = read_yaml("configs/app-configs.yml")
         connection_config = app_config["CONNECTIONS"]["ALLOYDB"]
         connection = AlloyDBConnection(**connection_config)
-
+        logger = LoggerHandler(
+            logger_name="TESTING-VECTOR-STORE", logging_type="console"
+        ).get_logger()
         # Create embedding model
         embedding_model = VertexAIEmbeddings(
             model_name="textembedding-gecko@latest", project=app_config["GCP_PROJECT"]
         )
 
         # Initialize vector store
-        db = AlloyDB(connection, embedding_model, app_config["OPENAI_API_KEY"])
+        db = AlloyDB(connection, embedding_model, app_config["OPENAI_API_KEY"], logger)
         async with db:
             table_config = AlloyTableConfig(**app_config["VECTOR_STORE"])
             await db.init_vector_storage_table(

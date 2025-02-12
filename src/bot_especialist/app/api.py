@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, tzinfo
+from datetime import datetime
 
 import pytz  # type: ignore
 from fastapi import FastAPI, status
@@ -13,6 +13,7 @@ from bot_especialist.databases.vector_store import AlloyDB
 from bot_especialist.models.configs import AlloyTableConfig, BotConfig
 from bot_especialist.models.connections import AlloyDBConnection, CloudSQLConnection
 from bot_especialist.models.data import FeedbackRequest, QueryRequest
+from bot_especialist.utils.app_logging import LoggerHandler
 from bot_especialist.utils.tools import generate_hash, read_yaml
 
 # Logging setup
@@ -20,13 +21,9 @@ for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
 
 APP_NAME = "BOT-SPECIALIST"
-
-logging.basicConfig(
-    level=logging.INFO,
-    format=f"%(asctime)s - [{APP_NAME}] - %(levelname)s:  %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    handlers=[logging.StreamHandler()],
-)
+logger = LoggerHandler(
+    logger_name=APP_NAME, logging_type="gcp_console", log_level="INFO"
+).get_logger()
 
 # Config API
 APP_CONFIGS = read_yaml("configs/app-configs.yml")
@@ -52,17 +49,18 @@ async def answer_query(request: QueryRequest):
         )
         alloydb_connection = AlloyDBConnection(**APP_CONFIGS["CONNECTIONS"]["ALLOYDB"])
         cloud_sql_connection = CloudSQLConnection(**APP_CONFIGS["CONNECTIONS"]["TRACK"])
-        cloud_sql = CloudSQL(cloud_sql_connection)
+        cloud_sql = CloudSQL(cloud_sql_connection, logger)
         bot_configs = BotConfig(**APP_CONFIGS["BOT"])
         embedding_model = VertexAIEmbeddings(
             model_name=APP_CONFIGS["GCP_EMBEDDING_MODEL"],
             project=APP_CONFIGS["GCP_PROJECT"],
         )
-        bot_specialist = OpenAIBotSpecialist(bot_configs)
+        bot_specialist = OpenAIBotSpecialist(bot_configs, logger)
         vector_store = AlloyDB(
             connection=alloydb_connection,
             embedding_model=embedding_model,
             openai_key=APP_CONFIGS["OPENAI_API_KEY"],
+            logger=logger,
         )
         async with vector_store:
             filters = " AND ".join(request.filters)
@@ -104,7 +102,7 @@ def send_feedback(request: FeedbackRequest):
     try:
         tz_region = APP_CONFIGS["TIME_ZONE"]
         connection = CloudSQLConnection(**APP_CONFIGS["CONNECTIONS"]["TRACK"])
-        cloud_sql = CloudSQL(connection)
+        cloud_sql = CloudSQL(connection, logger)
         created_at = datetime.now(tz=pytz.timezone(tz_region)).strftime(
             "%Y-%m-%d %H:%M:%S"
         )
