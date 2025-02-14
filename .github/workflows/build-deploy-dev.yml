@@ -12,13 +12,19 @@ on:
 
 env:
   ENVIRONMENT: "dev"
+  PROJECT_ID: "the-bot-specialist-dev"
   BEAM_VERSION: "2.59.0"
   BEAM_IMAGE: "apache/beam_python3.11_sdk"
-  VERSION_FILE: 'src/magic_apron_review_summary/__init__.py'
+  VERSION_FILE: 'src/bot_especialist/__init__.py'
+  PYTHON_IMAGE: "python:3.9"
+  CONTAINER_IMAGE: "us-central1-docker.pkg.dev/the-bot-specialist-dev/bot-specialist-repov1/bot-specialist-dev:v1"
+  REGISTRY_REPO_NAME: "bot-especialist-repo"
+
+
 
 jobs:
   composer-sync:
-    runs-on: acer-Aspire-A315-23
+    runs-on: self-hosted
     environment: dev
     steps:
       - name: Checkout repository
@@ -43,14 +49,14 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Set Workflow Variables
-        uses: ./.github/actions/set-env-args
+        uses: ./.github/actions/set-env-vars
         with:
           VERSION: ${{ steps.set_version.outputs.VERSION }}
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
 
   docker-build:
     needs: composer-sync
-    runs-on: acer-Aspire-A315-23
+    runs-on: self-hosted
     environment: dev
     steps:
       - name: Checkout repository
@@ -65,6 +71,10 @@ jobs:
         with:
           FILE_PATH: ${{ env.VERSION_FILE }}
 
+      - name: Install dependencies
+        id: poetry_install
+        uses: ./.github/actions/poetry-install
+
       - name: Gcloud Auth
         uses: google-github-actions/auth@v2
         with:
@@ -75,13 +85,20 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Set Workflow Variables
-        uses: ./.github/actions/set-env-args
+        uses: ./.github/actions/set-env-vars
         with:
           VERSION: ${{ steps.set_version.outputs.VERSION }}
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
 
-      - name: Docker Build & Push
-        uses: ./.github/actions/docker-build-push
+      - name: Check App functions with unit tests
+        id: check_functionalities
+        uses: ./.github/actions/run-unit-tests
+
+      - name: Provision, Build & Push
+        uses: ./.github/actions/provision-build-push
         with:
-          BEAM_IMAGE: ${{ env.BEAM_IMAGE }}
-          BEAM_VERSION: ${{ env.BEAM_VERSION }}
+          PYTHON_IMAGE: ${{ env.PYTHON_IMAGE }}
+          REGISTRY_REPO_NAME: ${{ env.REGISTRY_REPO_NAME }}
+          CONTAINER_IMAGE: ${{ env.CONTAINER_IMAGE }}
+          PROJECT_ID: ${{ env.PROJECT_ID }}
+          ENVIRONMENT: ${{ env.ENVIRONMENT }}

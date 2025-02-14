@@ -29,13 +29,8 @@ variable "container_image" {
 
 
 # Cloud SQL Variables
-variable "feedback_db_name" {
+variable "track_db_name" {
   description = "Database name for feedbacks"
-  type = string
-}
-
-variable "dialogue_db_name" {
-  description = "Database name for dialogues"
   type = string
 }
 
@@ -45,6 +40,11 @@ variable "postgres_version" {
 }
 
 variable "db_instance_type" {
+  description = "Instance type used to host Cloud SQL Databases"
+  type = string
+}
+
+variable "registry_repo_name" {
   description = "Instance type used to host Cloud SQL Databases"
   type = string
 }
