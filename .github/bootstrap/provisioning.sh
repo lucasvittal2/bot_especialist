@@ -90,6 +90,16 @@ push_container_gcp(){
 provision_gcp_infra() {
   ENV=$1
   PROJECT_PATH=$(pwd)
+
+  
+  if [ "$ENV" = "prod"]; then
+    INFRA_ENV="production"
+  elif [ "$ENV" = "staging"]; then
+    INFRA_ENV="stage"
+  else
+    INFRA_ENV="dev"
+  fi
+
   cd "terraform/environments/$ENV"
   echo "$(pwd)"
   echo ""
@@ -118,7 +128,7 @@ provision_gcp_infra() {
   echo ""
   echo "📋 Generating Execution plan..."
   echo ""
-  if ! terraform plan; then
+  if ! terraform plan -var-file="terraform/environments/$INFRA_ENV/terraform.tfvars"; then
     echo ""
     echo "❌ Got error on planning execution on terraform."
     echo ""
@@ -129,7 +139,7 @@ provision_gcp_infra() {
   echo ""
   echo "✅  Applying infrastructure..."
   echo ""
-  if ! terraform apply --auto-approve; then
+  if ! terraform apply --auto-approve -var-file="terraform/environments/$INFRA_ENV/terraform.tfvars"; then
     echo ""
     echo "❌ Got error when applying the infrastructure."
     echo ""
@@ -171,7 +181,6 @@ deploy_container() {
   local SERVICE_NAME="$3"
   local REGION="$4"
   local ENV=$5
-
 
   SERVICE_ACCOUNT="${ENV}-108@the-bot-specialist-dev.iam.gserviceaccount.com"
 
