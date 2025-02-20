@@ -91,15 +91,6 @@ provision_gcp_infra() {
   ENV=$1
   PROJECT_PATH=$(pwd)
 
-  
-  if [ "$ENV" = "prod"]; then
-    INFRA_ENV="production"
-  elif [ "$ENV" = "stage"]; then
-    INFRA_ENV="staging"
-  else
-    INFRA_ENV="dev"
-  fi
-
   cd "terraform/environments/$ENV"
   echo "$(pwd)"
   echo ""
@@ -128,7 +119,7 @@ provision_gcp_infra() {
   echo ""
   echo "📋 Generating Execution plan..."
   echo ""
-  if ! terraform plan -var-file="terraform/environments/$INFRA_ENV/terraform.tfvars"; then
+  if ! terraform plan -var-file="terraform.tfvars"; then
     echo ""
     echo "❌ Got error on planning execution on terraform."
     echo ""
@@ -139,7 +130,7 @@ provision_gcp_infra() {
   echo ""
   echo "✅  Applying infrastructure..."
   echo ""
-  if ! terraform apply --auto-approve -var-file="terraform/environments/$INFRA_ENV/terraform.tfvars"; then
+  if ! terraform apply --auto-approve -var-file="terraform.tfvars"; then
     echo ""
     echo "❌ Got error when applying the infrastructure."
     echo ""
