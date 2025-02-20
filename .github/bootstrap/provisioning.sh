@@ -94,8 +94,8 @@ provision_gcp_infra() {
   
   if [ "$ENV" = "prod"]; then
     INFRA_ENV="production"
-  elif [ "$ENV" = "staging"]; then
-    INFRA_ENV="stage"
+  elif [ "$ENV" = "stage"]; then
+    INFRA_ENV="staging"
   else
     INFRA_ENV="dev"
   fi
