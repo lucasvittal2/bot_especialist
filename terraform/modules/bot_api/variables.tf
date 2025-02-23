@@ -16,16 +16,6 @@ variable "region" {
   default     = "us-central1"
 }
 
-# Composer Variables
-variable "app_name" {
-  description = "The App name which runs on cloud run"
-  type        = string
-}
-
-variable "container_image" {
-  description = "The App name which runs on cloud run"
-  type        = string
-}
 
 
 # Cloud SQL Variables
