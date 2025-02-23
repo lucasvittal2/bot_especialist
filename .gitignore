@@ -10,3 +10,4 @@ bot-especialist-3.9/
 /terraform/environments/dev/terraform.tfstate
 .env
 assets/configs/app-configs.yml
+/the-bot-specialist-dev-key.json
