@@ -19,6 +19,8 @@ runs:
 
     - name: Install dependencies
       run: |
+        export PYTHONHOME=/opt/hostedtoolcache/Python/3.9.21/x64
+        export PYTHONPATH=$PYTHONHOME/lib/python3.9
         python -m venv wfenv  # Create a virtual environment
         source wfenv/bin/activate
         curl -sSL https://install.python-poetry.org | python3 -
