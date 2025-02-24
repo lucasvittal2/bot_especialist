@@ -1,0 +1,46 @@
+GCP_PROJECT: "the-bot-specialist-dev"
+GCP_EMBEDDING_MODEL: "textembedding-gecko@latest"
+TIME_ZONE: "America/Sao_Paulo"
+OPENAI_API_KEY: "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"
+
+BOT:
+  llm_model: "gpt-4o-mini"
+  sys_instructions: "You are a specialized assistant. Your mission is to answer questions based on the provided context and guide the user to verify your answer."
+  prompt: "Answer my question following these steps:\n\nUse the given context to answer: \"{question}\"\nAlways end with \"Thanks for asking!\"\nIf unsure, say \"I don't know\" instead of guessing.\nProvide metadata on where the user can verify the answer.\n\n\nContext:\n{context}\n\nMetadata:\n{metadata}\n\nGeneric Answer Example: This is your answer. You can check the answer in \"xpto.pdf\" (pages 65-66) or \"xyz.pdf\" (pages 9-10)."
+
+CONNECTIONS:
+  TRACK:
+    connection_name: "the-bot-specialist-dev:us-central1:track"
+    engine: "postgresql"
+    ip_address: "34.41.219.161"
+    db_user: "postgres"
+    db_password: "admin"
+    db_name: "bot_specialist"
+    use_private_ip: False
+    plugin: "pg8000"
+
+  ALLOYDB:
+    connection_name: "the-bot-specialist-dev:us-central1:vector-store-dev"
+    region: "us-central1"
+    cluster: "cluster-us-central1"
+    instance: "cluster-us-central1-instance1"
+    database: "postgres"
+    table_name: "bot-brain"
+    project_id: "the-bot-specialist-dev"
+    db_schema: "public"
+    db_host: "172.16.0.11"
+    db_user: "user-dev"
+    db_password: "admin-dev"
+    db_port: 5432
+    db_name: "postgres"
+    use_private_ip: False
+
+
+VECTOR_STORE:
+  EMBEDDING_MODEL: "textembedding-gecko@latest"
+  vector_size: 768
+  metadata_columns: ["source_doc", "page_number", "topics"]
+  metadata_json_column: "metadata"
+  id_column: "id"
+  content_column: "text"
+  embedding_column: "embedding"
