@@ -12,13 +12,14 @@ spec:
       labels:
         app: bot-specialist-api
     spec:
+      serviceAccountName: "gke-dev"
       imagePullSecrets:
-      - name: gcp-artifact-registry
+        - name: gcp-artifact-registry
       containers:
-      - name: bot-specialist-api
-        image: us-central1-docker.pkg.dev/the-bot-specialist-dev/bot-especialist-repo/us-central1-docker.pkg.dev/the-bot-specialist-dev/bot-specialist-repov1/bot-especialist:v1
-        ports:
-          - containerPort: 8090
-        env:
-          - name: PORT
-            value: "8090"
+        - name: bot-specialist-api
+          image: "us-central1-docker.pkg.dev/the-bot-specialist-dev/bot-especialist-repo/bot-especialist:v1"
+          ports:
+            - containerPort: 8090
+          env:
+            - name: PORT
+              value: "8090"
