@@ -6,7 +6,7 @@ build_container() {
     CONTAINER_IMAGE=$2
     PORT=$3
     ENV=$4
-    echo "Building Container..."
+    echo "⚙️ Building Container..."
     echo ""
     # Run the Docker build command and capture the exit code
     docker build \
@@ -18,11 +18,11 @@ build_container() {
     # Check if the last command was successful
     if [ $? -eq 0 ]; then
       echo
-      echo "Container was built successfully!"
+      echo "✅ Container was built successfully!"
       echo ""
     else
       echo
-      echo "Failed to build the container. Please check the logs above for details."
+      echo "❌ Failed to build the container. Please check the logs above for details."
       echo ""
       exit 1  # Exit the script with an error code
     fi
@@ -34,7 +34,7 @@ create_artifact_repo() {
 
 
   echo ""
-  echo "Creating repository ${REPOSITORY_NAME}..."
+  echo "⚙️ Creating repository ${REPOSITORY_NAME}..."
   echo ""
 
   # Verifica se o repositório já existe
@@ -127,7 +127,7 @@ provision_gcp_infra() {
 
   # Aplica as mudanças automaticamente
   echo ""
-  echo "✅  Applying infrastructure..."
+  echo "⚙️  Applying infrastructure..."
   echo ""
   if ! terraform apply --auto-approve -refresh=false; then
     echo ""
@@ -260,16 +260,20 @@ setup_cluster_credentials(){
       gcloud projects add-iam-policy-binding "$PROJECT_ID" \
       --member="serviceAccount:${K8S_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com" \
       --role="roles/artifactregistry.reader"
+      gcloud projects add-iam-policy-binding "$PROJECT_ID" --member="serviceAccount:${K8S_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/alloydb.client"
+      gcloud projects add-iam-policy-binding "$PROJECT_ID" --member="serviceAccount:${K8S_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/serviceusage.serviceUsageConsumer"
       echo "✅ Kubernetes service account created successfully !"
+      echo ""
 
   fi
   echo "🔗 Binding Kubernetes SA to GCP IAM..."
-  gcloud iam service-accounts add-iam-policy-binding "$SERVICE_ACCOUNT_NAME@$PROJECT_ID.iam.gserviceaccount.com" \
+
+  gcloud iam service-accounts add-iam-policy-binding "$K8S_SERVICE_ACCOUNT@$PROJECT_ID.iam.gserviceaccount.com" \
       --role=roles/iam.workloadIdentityUser \
       --member="serviceAccount:$PROJECT_ID.svc.id.goog[default/$K8S_SERVICE_ACCOUNT]"
 
   kubectl annotate serviceaccount "$K8S_SERVICE_ACCOUNT" \
-      iam.gke.io/gcp-service-account="$SERVICE_ACCOUNT_NAME@$PROJECT_ID.iam.gserviceaccount.com"
+      iam.gke.io/gcp-service-account="$K8S_SERVICE_ACCOUNT@$PROJECT_ID.iam.gserviceaccount.com"
   echo "✅ Cluster credentials setup completed successfully !"
   echo ""
 }
@@ -304,7 +308,7 @@ deploy_container() {
 
   create_gke_subnet "$NETWORK" "$GKE_SUBNETWORK" "$REGION"
   create_gke_cluster  "$CLUSTER_NAME" "$REGION" "$SERVICE_ACCOUNT_NAME@$PROJECT_ID.iam.gserviceaccount.com" "$GKE_SUBNETWORK"
-  setup_cluster_credentials "$CLUSTER_NAME" "$K8S_SERVICE_ACCOUNT" "$REGION" "$PROJECT_ID"
+  setup_cluster_credentials "$CLUSTER_NAME" "$SERVICE_ACCOUNT_NAME" "$REGION" "$PROJECT_ID"
 
 
   echo "📌 Deploying application to GKE..."
