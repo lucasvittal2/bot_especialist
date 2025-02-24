@@ -8,7 +8,6 @@ CREATE TABLE track.dialogues(
   created_at VARCHAR(30),
   question TEXT,
   answer TEXT
-
 );
 
 CREATE TABLE track.feedbacks(
