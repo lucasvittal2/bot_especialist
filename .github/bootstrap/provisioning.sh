@@ -297,7 +297,7 @@ deploy_container() {
   local GKE_MIN_NODES=$8
   local GKE_MAX_NODES=$9
   local GKE_NODE_MACHINE_TYPE=${10}
-
+  echo
 
   NETWORK='default'
   SERVICE_ACCOUNT_NAME="gke-${ENV}"
@@ -316,7 +316,7 @@ deploy_container() {
       --role="roles/storage.admin"
 
   create_gke_subnet "$NETWORK" "$GKE_SUBNETWORK" "$REGION"
-  create_gke_cluster  "$CLUSTER_NAME" "$REGION" "$SERVICE_ACCOUNT_NAME@$PROJECT_ID.iam.gserviceaccount.com" "$GKE_SUBNETWORK"
+  create_gke_cluster  "$CLUSTER_NAME" "$REGION" "$SERVICE_ACCOUNT_NAME@$PROJECT_ID.iam.gserviceaccount.com" "$GKE_SUBNETWORK" "$GKE_DISK_SIZE" "$GKE_MIN_NODES" "$GKE_MAX_NODES"
   setup_cluster_credentials "$CLUSTER_NAME" "$SERVICE_ACCOUNT_NAME" "$REGION" "$PROJECT_ID"
 
 
@@ -390,7 +390,7 @@ while [[ $# -gt 0 ]]; do
     ;;
   --container-port)
     CONTAINER_PORT="$2"
-    echo "CONTAINER_PORT $CONTAINER_PORT"
+    echo "CONTAINER_PORT=$CONTAINER_PORT"
     shift 2
     ;;
   --project-id)
@@ -400,22 +400,22 @@ while [[ $# -gt 0 ]]; do
     ;;
   --region)
     REGION="$2"
-    echo "PROJECT_ID=$REGION"
+    echo "REGION=$REGION"
     shift 2
     ;;
   --gke-disk-size)
     GKE_DISK_SIZE="$2"
-    echo "PROJECT_ID=$GKE_DISK_SIZE"
+    echo "GKE_DISK_SIZE=$GKE_DISK_SIZE"
     shift 2
     ;;
   --gke-min-nodes)
     GKE_MIN_NODES="$2"
-    echo "PROJECT_ID=$GKE_MIN_NODES"
+    echo "GKE_MIN_NODES=$GKE_MIN_NODES"
     shift 2
     ;;
   --gke-max-nodes)
     GKE_MAX_NODES="$2"
-    echo "PROJECT_ID=$GKE_MAX_NODES"
+    echo "GKE_MAX_NODES=$GKE_MAX_NODES"
     shift 2
     ;;
   --gke-node-machine-type)
@@ -449,7 +449,8 @@ if [ "$MODE" = "CREATE" ]; then
   deploy_container "$REGISTRY_URL" \
                     "$CONTAINER_PORT" \
                     "$SERVICE_NAME" \
-                    "$REGION" "$ENV" \
+                    "$REGION" \
+                    "$ENV" \
                     "$PROJECT_ID" \
                     "$GKE_DISK_SIZE" \
                     "$GKE_MIN_NODES" \

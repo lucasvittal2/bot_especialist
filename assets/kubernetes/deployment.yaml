@@ -17,7 +17,7 @@ spec:
         - name: gcp-artifact-registry
       containers:
         - name: bot-specialist-api
-          image: "us-central1-docker.pkg.dev/the-bot-specialist-dev/bot-especialist-repo/bot-especialist:v1"
+          image: "us-central1-docker.pkg.dev/the-bot-specialist-dev/bot-especialist-repo/bot-especialist:v1.1"
           ports:
             - containerPort: 8090
           env:
