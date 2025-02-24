@@ -445,7 +445,7 @@ if [ "$MODE" = "CREATE" ]; then
   build_container "$PYTHON_CONTAINER_IMAGE" "$REGISTRY_URL" "$CONTAINER_PORT" "$ENV"
   create_artifact_repo "$REPOSITORY_NAME" "$PROJECT_ID"
   push_container_gcp "$REGISTRY_URL" "$PROJECT_ID"
-  provision_gcp_infra "$ENV"
+  #provision_gcp_infra "$ENV"
   deploy_container "$REGISTRY_URL" \
                     "$CONTAINER_PORT" \
                     "$SERVICE_NAME" \
