@@ -79,6 +79,8 @@ def send_feedback(request: FeedbackRequest):
             },
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
-        logging.error(f"Answer question has failed due to: \n\n{err}\n\n")
+        logging.error(
+            f"Answer question has failed due to: \n\n{err}\n\n", stack_info=True
+        )
 
     return response
