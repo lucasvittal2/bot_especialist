@@ -219,6 +219,10 @@ create_gke_cluster(){
     REGION=$2
     SERVICE_ACCOUNT=$3
     GKE_SUBNETWORK=$4
+    GKE_DISK_SIZE=$5
+    GKE_MIN_NODES=$6
+    GKE_MAX_NODES=$7
+
     CREATED_CLUSTER=$(gcloud container clusters list --filter="name=$CLUSTER_NAME AND location=$REGION" --format="value(name)")
     echo "⚙️ Creating GKE cluster..."
     if [[ -n "$CREATED_CLUSTER" ]]; then
@@ -232,10 +236,10 @@ create_gke_cluster(){
             --service-account="$SERVICE_ACCOUNT" \
             --scopes="https://www.googleapis.com/auth/cloud-platform" \
             --region="$REGION" \
-            --disk-size=25 \
+            --disk-size="$GKE_DISK_SIZE" \
             --enable-autoscaling \
-            --min-nodes=1 \
-            --max-nodes=1 \
+            --min-nodes="$GKE_MIN_NODES" \
+            --max-nodes="$GKE_MAX_NODES" \
             --subnetwork="$GKE_SUBNETWORK"
         echo "✅ GKE cluster were created successfully !"
         echo ""
@@ -278,7 +282,7 @@ setup_cluster_credentials(){
   echo ""
 }
 deploy_container() {
-  if [ $# -ne 6 ]; then
+  if [ $# -ne 10 ]; then
     echo "❌ Uso: deploy_container <IMAGE_URL> <LISTEN_PORT> <SERVICE_NAME> <REGION> <ENV> <PROJECT_ID>"
     return 1
   fi
@@ -289,6 +293,11 @@ deploy_container() {
   local REGION="$4"
   local ENV=$5
   local PROJECT_ID=$6
+  local GKE_DISK_SIZE=$7
+  local GKE_MIN_NODES=$8
+  local GKE_MAX_NODES=$9
+  local GKE_NODE_MACHINE_TYPE=${10}
+
 
   NETWORK='default'
   SERVICE_ACCOUNT_NAME="gke-${ENV}"
@@ -394,6 +403,27 @@ while [[ $# -gt 0 ]]; do
     echo "PROJECT_ID=$REGION"
     shift 2
     ;;
+  --gke-disk-size)
+    GKE_DISK_SIZE="$2"
+    echo "PROJECT_ID=$GKE_DISK_SIZE"
+    shift 2
+    ;;
+  --gke-min-nodes)
+    GKE_MIN_NODES="$2"
+    echo "PROJECT_ID=$GKE_MIN_NODES"
+    shift 2
+    ;;
+  --gke-max-nodes)
+    GKE_MAX_NODES="$2"
+    echo "PROJECT_ID=$GKE_MAX_NODES"
+    shift 2
+    ;;
+  --gke-node-machine-type)
+    GKE_NODE_MACHINE_TYPE="$2"
+    echo "PROJECT_ID=$GKE_NODE_MACHINE_TYPE"
+    shift 2
+    ;;
+
   *)
     echo "❌ Invalid option: $1"
     usage
@@ -404,7 +434,9 @@ done
 # Main execution
 if [ "$MODE" = "CREATE" ]; then
   ## Verifica se todas as variáveis obrigatórias foram definidas
-  if [[ -z "$ENV" || -z "$MODE" || -z "$PYTHON_CONTAINER_IMAGE" || -z "$REPOSITORY_NAME" || -z "$CONTAINER_IMAGE" || -z "$PROJECT_ID" ]]; then
+  # shellcheck disable=SC1019
+  # shellcheck disable=SC1072
+  if [[ -z "$ENV" || -z "$MODE" || -z "$PYTHON_CONTAINER_IMAGE" || -z "$REPOSITORY_NAME" || -z "$CONTAINER_IMAGE" || -z "$PROJECT_ID" || -z "$GKE_DISK_SIZE" || -z "$GKE_MIN_NODES"  || -z "$GKE_NODE_MACHINE_TYPE" ]]; then
     echo "❌ Erro: Todos os parâmetros são obrigatórios!"
     usage
   fi
@@ -414,7 +446,16 @@ if [ "$MODE" = "CREATE" ]; then
   create_artifact_repo "$REPOSITORY_NAME" "$PROJECT_ID"
   push_container_gcp "$REGISTRY_URL" "$PROJECT_ID"
   provision_gcp_infra "$ENV"
-  deploy_container "$REGISTRY_URL" "$CONTAINER_PORT" "$SERVICE_NAME" "$REGION" "$ENV" "$PROJECT_ID"
+  deploy_container "$REGISTRY_URL" \
+                    "$CONTAINER_PORT" \
+                    "$SERVICE_NAME" \
+                    "$REGION" "$ENV" \
+                    "$PROJECT_ID" \
+                    "$GKE_DISK_SIZE" \
+                    "$GKE_MIN_NODES" \
+                    "$GKE_MAX_NODES" \
+                    "$GKE_NODE_MACHINE_TYPE"
+
 
 fi
 

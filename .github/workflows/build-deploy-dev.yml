@@ -19,7 +19,11 @@ env:
   PYTHON_IMAGE: "python:3.9"
   CONTAINER_IMAGE: "us-central1-docker.pkg.dev/the-bot-specialist-dev/bot-specialist-repov1/bot-specialist-dev:v1"
   REGISTRY_REPO_NAME: "bot-especialist-repo"
-
+  REGION: "us-central1"
+  GKE_DISK_SIZE: "25"
+  GKE_MIN_NODES: "1"
+  GKE_MAX_NODES: "1"
+  GKE_MACHINE_TYPE: "e2-medium"
 
 
 jobs:
@@ -102,3 +106,7 @@ jobs:
           CONTAINER_IMAGE: ${{ env.CONTAINER_IMAGE }}
           PROJECT_ID: ${{ env.PROJECT_ID }}
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
+          REGION: ${{ env.REGION }}
+          GKE_DISK_SIZE: ${{ env.GKE_DISK_SIZE }}
+          GKE_MAX_NODES: ${{ env.GKE_MAX_NODES }}
+          GKE_MACHINE_TYPE: ${{ env.GKE_MACHINE_TYPE }}
