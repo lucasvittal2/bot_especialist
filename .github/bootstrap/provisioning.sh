@@ -118,7 +118,7 @@ provision_gcp_infra() {
   echo ""
   echo "📋 Generating Execution plan..."
   echo ""
-  if ! terraform plan; then
+  if ! terraform apply --auto-approve -var-file="terraform.tfvars"; then
     echo ""
     echo "❌ Got error on planning execution on terraform."
     echo ""
@@ -129,7 +129,7 @@ provision_gcp_infra() {
   echo ""
   echo "⚙️  Applying infrastructure..."
   echo ""
-  if ! terraform apply --auto-approve -refresh=false; then
+  if ! terraform apply --auto-approve -var-file="terraform.tfvars"; then
     echo ""
     echo "❌ Got error when applying the infrastructure."
     echo ""
