@@ -46,10 +46,12 @@ RUN apt-get update && apt-get install -y \
 
 # Verify gcloud installation
 RUN gcloud --version
-
-# Convert ARG to ENV to make it accessible during build time
 ARG GCP_PROJECT
 ENV GCP_PROJECT=${GCP_PROJECT}
+
+#only to run locally
+#COPY the-bot-specialist-dev-key.json ./
+#ENV GOOGLE_APPLICATION_CREDENTIALS="the-bot-specialist-dev-key.json"
 
 # Debugging to ensure the value is set
 RUN echo "GCP_PROJECT is set to: $GCP_PROJECT"
@@ -59,9 +61,6 @@ RUN gcloud config set project "$GCP_PROJECT"
 
 # Copy the built wheel from the builder stage
 COPY --from=builder /bot_especialist/dist /bot_especialist/dist
-
-# Copy Config File
-COPY assets/configs/app-configs.yml configs/app-configs.yml
 
 # Install the built wheel
 RUN pip install -U langchain-community

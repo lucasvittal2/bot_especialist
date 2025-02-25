@@ -150,7 +150,7 @@ if __name__ == "__main__":
     async def main():
 
         # Load configurations
-        app_config = read_yaml("configs/app-configs.yml")
+        app_config = read_yaml("assets/configs/app-configs.yml")
         connection_config = app_config["CONNECTIONS"]["ALLOYDB"]
         connection = AlloyDBConnection(**connection_config)
         logger = LoggerHandler(

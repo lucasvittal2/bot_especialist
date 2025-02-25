@@ -8,7 +8,7 @@ from bot_especialist.app.bot import OpenAIBotSpecialist
 from bot_especialist.models.configs import BotConfig
 from bot_especialist.models.data import FeedbackRequest, QueryRequest
 from bot_especialist.utils.app_logging import LoggerHandler
-from bot_especialist.utils.tools import read_yaml
+from bot_especialist.utils.tools import get_gcp_secrets
 
 # Logging setup
 for handler in logging.root.handlers[:]:
@@ -20,7 +20,7 @@ logger = LoggerHandler(
 ).get_logger()
 
 # Config API
-APP_CONFIGS = read_yaml("configs/app-configs.yml")
+APP_CONFIGS = get_gcp_secrets("150030916493", "bot-api-secrets")
 bot_api = FastAPI()
 bot_api.add_middleware(
     CORSMiddleware,
@@ -79,6 +79,8 @@ def send_feedback(request: FeedbackRequest):
             },
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
-        logging.error(f"Answer question has failed due to: \n\n{err}\n\n")
+        logging.error(
+            f"Answer question has failed due to: \n\n{err}\n\n", stack_info=True
+        )
 
     return response

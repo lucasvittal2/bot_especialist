@@ -19,6 +19,7 @@ runs:
 
     - name: Install dependencies
       run: |
+
         python -m venv wfenv  # Create a virtual environment
         source wfenv/bin/activate
         curl -sSL https://install.python-poetry.org | python3 -

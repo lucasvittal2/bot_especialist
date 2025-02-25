@@ -6,7 +6,7 @@ build_container() {
     CONTAINER_IMAGE=$2
     PORT=$3
     ENV=$4
-    echo "Building Container..."
+    echo "⚙️ Building Container..."
     echo ""
     # Run the Docker build command and capture the exit code
     docker build \
@@ -18,11 +18,11 @@ build_container() {
     # Check if the last command was successful
     if [ $? -eq 0 ]; then
       echo
-      echo "Container was built successfully!"
+      echo "✅ Container was built successfully!"
       echo ""
     else
       echo
-      echo "Failed to build the container. Please check the logs above for details."
+      echo "❌ Failed to build the container. Please check the logs above for details."
       echo ""
       exit 1  # Exit the script with an error code
     fi
@@ -34,7 +34,7 @@ create_artifact_repo() {
 
 
   echo ""
-  echo "Creating repository ${REPOSITORY_NAME}..."
+  echo "⚙️ Creating repository ${REPOSITORY_NAME}..."
   echo ""
 
   # Verifica se o repositório já existe
@@ -72,7 +72,7 @@ push_container_gcp(){
     echo ""
     return 1
   fi
-  echo""
+  echo ""
   echo "🚀 Pushing image to $REGISTRY_URL..."
   echo ""
   if docker push "$REGISTRY_URL"; then
@@ -127,9 +127,9 @@ provision_gcp_infra() {
 
   # Aplica as mudanças automaticamente
   echo ""
-  echo "✅  Applying infrastructure..."
+  echo "⚙️  Applying infrastructure..."
   echo ""
-  if ! terraform apply --auto-approve; then
+  if ! terraform apply --auto-approve -refresh=false; then
     echo ""
     echo "❌ Got error when applying the infrastructure."
     echo ""
@@ -159,10 +159,131 @@ destroy_gcp_infra(){
   echo "💥 Destroyed Successfully GCP infrastructure"
   cd $PROJECT_PATH
 }
+enable_necessary_apis(){
+  echo ""
+  echo "⚙️ Enabling required APIs..."
+  gcloud services enable container.googleapis.com
+  gcloud services enable iam.googleapis.com
+  gcloud services enable artifactregistry.googleapis.com
+  echo "✅ All needed API is enabled !"
+  echo ""
+}
 
+create_gke_sa(){
+  SERVICE_ACCOUNT_NAME=$1
+  PROJECT_ID=$2
+  echo ""
+  echo "⚙️ Creating gke Service Account..."
+  if gcloud iam service-accounts list --format="value(email)" | grep -q "$SERVICE_ACCOUNT_NAME@$PROJECT_ID.iam.gserviceaccount.com"; then
+      echo "⚠️ Service Account '$SERVICE_ACCOUNT_NAME' already exists."
+      echo ""
+  else
+      echo "👤 Creating Service Account: $SERVICE_ACCOUNT_NAME"
+      gcloud iam service-accounts create "$SERVICE_ACCOUNT_NAME" \
+          --display-name "GKE Service Account"
+      gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+      --member="serviceAccount:${SERVICE_ACCOUNT_NAME}@the-bot-specialist-dev.iam.gserviceaccount.com" \
+      --role="roles/artifactregistry.reader"
+
+      echo "🔑 Assigning IAM roles to Service Account..."
+      gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+          --member="serviceAccount:$SERVICE_ACCOUNT_NAME@$PROJECT_ID.iam.gserviceaccount.com" \
+          --role="roles/container.admin"
+      echo "✅ Service Account were created successfully !"
+      echo ""
+  fi
+
+}
+
+create_gke_subnet(){
+    NETWORK=$1
+    GKE_SUBNETWORK=$2
+    REGION=$3
+    echo "⚙️ Creating GKE subnet..."
+    if gcloud compute networks subnets list --filter="name=$GKE_SUBNETWORK AND region=$REGION" --format="value(name)"; then
+        echo "⚠️  Subnetwork '$GKE_SUBNETWORK' already exists. Skipping GKE subnet creation..."
+        echo ""
+    else
+        echo "🌐 Creating subnetwork '$GKE_SUBNETWORK' in network '$NETWORK' ..."
+        gcloud compute networks subnets create "$GKE_SUBNETWORK" \
+            --network="$NETWORK" \
+            --region="$REGION" \
+            --range="10.0.0.0/20"
+        echo "✅ GKE subnet were created successfully !"
+        echo ""
+    fi
+  }
+
+create_gke_cluster(){
+    CLUSTER_NAME=$1
+    REGION=$2
+    SERVICE_ACCOUNT=$3
+    GKE_SUBNETWORK=$4
+    GKE_DISK_SIZE=$5
+    GKE_MIN_NODES=$6
+    GKE_MAX_NODES=$7
+
+    CREATED_CLUSTER=$(gcloud container clusters list --filter="name=$CLUSTER_NAME AND location=$REGION" --format="value(name)")
+    echo "⚙️ Creating GKE cluster..."
+    if [[ -n "$CREATED_CLUSTER" ]]; then
+        echo "⚠️ GKE Cluster '$CLUSTER_NAME' already exists. Skipping creation..."
+        echo ""
+    else
+        echo "🚀 Creating GKE Cluster: $CLUSTER_NAME..."
+        gcloud container clusters create "$CLUSTER_NAME" \
+            --num-nodes=1 \
+            --machine-type="e2-medium" \
+            --service-account="$SERVICE_ACCOUNT" \
+            --scopes="https://www.googleapis.com/auth/cloud-platform" \
+            --region="$REGION" \
+            --disk-size="$GKE_DISK_SIZE" \
+            --enable-autoscaling \
+            --min-nodes="$GKE_MIN_NODES" \
+            --max-nodes="$GKE_MAX_NODES" \
+            --subnetwork="$GKE_SUBNETWORK"
+        echo "✅ GKE cluster were created successfully !"
+        echo ""
+    fi
+}
+
+setup_cluster_credentials(){
+  CLUSTER_NAME=$1
+  K8S_SERVICE_ACCOUNT=$2
+  REGION=$3
+  PROJECT_ID=$4
+
+  echo "🔄 Fetching cluster credentials..."
+  gcloud container clusters get-credentials "$CLUSTER_NAME" --region "$REGION"
+  if kubectl get serviceaccount "$K8S_SERVICE_ACCOUNT" --output=jsonpath='{.metadata.name}'; then
+      echo "⚠️ Kubernetes Service Account '$K8S_SERVICE_ACCOUNT' already exists. Skipping creation..."
+      echo ""
+
+  else
+      echo "🔧 Creating Kubernetes Service Account: $K8S_SERVICE_ACCOUNT..."
+      kubectl create serviceaccount "$K8S_SERVICE_ACCOUNT"
+      gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+      --member="serviceAccount:${K8S_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com" \
+      --role="roles/artifactregistry.reader"
+      gcloud projects add-iam-policy-binding "$PROJECT_ID" --member="serviceAccount:${K8S_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/alloydb.client"
+      gcloud projects add-iam-policy-binding "$PROJECT_ID" --member="serviceAccount:${K8S_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/serviceusage.serviceUsageConsumer"
+      echo "✅ Kubernetes service account created successfully !"
+      echo ""
+
+  fi
+  echo "🔗 Binding Kubernetes SA to GCP IAM..."
+
+  gcloud iam service-accounts add-iam-policy-binding "$K8S_SERVICE_ACCOUNT@$PROJECT_ID.iam.gserviceaccount.com" \
+      --role=roles/iam.workloadIdentityUser \
+      --member="serviceAccount:$PROJECT_ID.svc.id.goog[default/$K8S_SERVICE_ACCOUNT]"
+
+  kubectl annotate serviceaccount "$K8S_SERVICE_ACCOUNT" \
+      iam.gke.io/gcp-service-account="$K8S_SERVICE_ACCOUNT@$PROJECT_ID.iam.gserviceaccount.com"
+  echo "✅ Cluster credentials setup completed successfully !"
+  echo ""
+}
 deploy_container() {
-  if [ $# -ne 5 ]; then
-    echo "❌ Uso: deploy_container <IMAGE_URL> <LISTEN_PORT> <SERVICE_NAME> <REGION> <ENV>"
+  if [ $# -ne 10 ]; then
+    echo "❌ Uso: deploy_container <IMAGE_URL> <LISTEN_PORT> <SERVICE_NAME> <REGION> <ENV> <PROJECT_ID>"
     return 1
   fi
 
@@ -171,26 +292,65 @@ deploy_container() {
   local SERVICE_NAME="$3"
   local REGION="$4"
   local ENV=$5
+  local PROJECT_ID=$6
+  local GKE_DISK_SIZE=$7
+  local GKE_MIN_NODES=$8
+  local GKE_MAX_NODES=$9
+  local GKE_NODE_MACHINE_TYPE=${10}
+  echo
+
+  NETWORK='default'
+  SERVICE_ACCOUNT_NAME="gke-${ENV}"
+  SERVICE_ACCOUNT="$SERVICE_ACCOUNT_NAME@$PROJECT_ID.iam.gserviceaccount.com"
+  DEPLOYMENT_FILE="assets/kubernetes/deployment.yaml"
+  CLUSTER_NAME="bot-api-cluster-${ENV}"
+  K8S_SERVICE_ACCOUNT="gke-sa-${ENV}"
+  GKE_SUBNETWORK="gke-net-${ENV}"
+  DEPLOYMENT_NAME="bot-specialist-api"
 
 
-  SERVICE_ACCOUNT="${ENV}-108@the-bot-specialist-dev.iam.gserviceaccount.com"
+  enable_necessary_apis
+  create_gke_sa "$SERVICE_ACCOUNT_NAME" "$PROJECT_ID"
+  gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+      --member="serviceAccount:$SERVICE_ACCOUNT" \
+      --role="roles/storage.admin"
+
+  create_gke_subnet "$NETWORK" "$GKE_SUBNETWORK" "$REGION"
+  create_gke_cluster  "$CLUSTER_NAME" "$REGION" "$SERVICE_ACCOUNT_NAME@$PROJECT_ID.iam.gserviceaccount.com" "$GKE_SUBNETWORK" "$GKE_DISK_SIZE" "$GKE_MIN_NODES" "$GKE_MAX_NODES"
+  setup_cluster_credentials "$CLUSTER_NAME" "$SERVICE_ACCOUNT_NAME" "$REGION" "$PROJECT_ID"
 
 
-  echo ""
-  echo "📦 🐳 Deploying container '$SERVICE_NAME' to Cloud Run in region '$REGION'..."
-  echo ""
+  echo "📌 Deploying application to GKE..."
+  kubectl apply -f "$DEPLOYMENT_FILE"
+  EXISTING_SERVICE=$(kubectl get svc "$DEPLOYMENT_NAME" --ignore-not-found)
 
-  if gcloud run deploy "$SERVICE_NAME" --image="$IMAGE_URL" --port="$LISTEN_PORT" --region="$REGION" --service-account "$SERVICE_ACCOUNT"; then
-    echo ""
-    echo "✅  🚢  Container '$SERVICE_NAME' was successfully deployed in '$REGION'!"
-    echo ""
+  if [[ -n "$EXISTING_SERVICE" ]]; then
+      echo "⚠️ Service '$DEPLOYMENT_NAME' already exists. Skipping expose..."
+      echo ""
   else
-    echo "❌ 🚨 Deployment failed. Check logs for details."
-    return 1
+      echo "🌐 Exposing the application via LoadBalancer..."
+      kubectl expose deployment "$DEPLOYMENT_NAME" --type=LoadBalancer --port="80" --target-port="8090"
+      echo "✔️ Application is exposed via LoadBalancer"
+      echo ""
   fi
-}
 
-# shellcheck disable=SC2120
+
+  echo "⏳ Waiting for external IP..."
+  sleep 10  # Initial wait time
+  while true; do
+      EXTERNAL_IP=$(kubectl get "svc/$DEPLOYMENT_NAME" --output=jsonpath='{.status.loadBalancer.ingress[0].ip}')
+      if [[ -n "$EXTERNAL_IP" ]]; then
+          echo "🎉 Application is live at: http://${EXTERNAL_IP}:80"
+          break
+      else
+          echo "⌛ Still waiting for external IP..."
+          sleep 10
+      fi
+  done
+  echo "✅ Deployment process completed successfully!"
+  echo ""
+
+}
 
 
 # Inicializa variáveis
@@ -220,7 +380,7 @@ while [[ $# -gt 0 ]]; do
     ;;
   --service-name)
     SERVICE_NAME="$2"
-    echo "CONTAINER_IMAGE=$CONTAINER_IMAGE"
+    echo "CONTAINER_IMAGE=$SERVICE_NAME"
     shift 2
     ;;
   --container-image)
@@ -230,7 +390,7 @@ while [[ $# -gt 0 ]]; do
     ;;
   --container-port)
     CONTAINER_PORT="$2"
-    echo "CONTAINER_PORT $CONTAINER_PORT"
+    echo "CONTAINER_PORT=$CONTAINER_PORT"
     shift 2
     ;;
   --project-id)
@@ -240,9 +400,30 @@ while [[ $# -gt 0 ]]; do
     ;;
   --region)
     REGION="$2"
-    echo "PROJECT_ID=$PROJECT_ID"
+    echo "REGION=$REGION"
     shift 2
     ;;
+  --gke-disk-size)
+    GKE_DISK_SIZE="$2"
+    echo "GKE_DISK_SIZE=$GKE_DISK_SIZE"
+    shift 2
+    ;;
+  --gke-min-nodes)
+    GKE_MIN_NODES="$2"
+    echo "GKE_MIN_NODES=$GKE_MIN_NODES"
+    shift 2
+    ;;
+  --gke-max-nodes)
+    GKE_MAX_NODES="$2"
+    echo "GKE_MAX_NODES=$GKE_MAX_NODES"
+    shift 2
+    ;;
+  --gke-node-machine-type)
+    GKE_NODE_MACHINE_TYPE="$2"
+    echo "PROJECT_ID=$GKE_NODE_MACHINE_TYPE"
+    shift 2
+    ;;
+
   *)
     echo "❌ Invalid option: $1"
     usage
@@ -253,7 +434,9 @@ done
 # Main execution
 if [ "$MODE" = "CREATE" ]; then
   ## Verifica se todas as variáveis obrigatórias foram definidas
-  if [[ -z "$ENV" || -z "$MODE" || -z "$PYTHON_CONTAINER_IMAGE" || -z "$REPOSITORY_NAME" || -z "$CONTAINER_IMAGE" || -z "$PROJECT_ID" ]]; then
+  # shellcheck disable=SC1019
+  # shellcheck disable=SC1072
+  if [[ -z "$ENV" || -z "$MODE" || -z "$PYTHON_CONTAINER_IMAGE" || -z "$REPOSITORY_NAME" || -z "$CONTAINER_IMAGE" || -z "$PROJECT_ID" || -z "$GKE_DISK_SIZE" || -z "$GKE_MIN_NODES"  || -z "$GKE_NODE_MACHINE_TYPE" ]]; then
     echo "❌ Erro: Todos os parâmetros são obrigatórios!"
     usage
   fi
@@ -262,8 +445,18 @@ if [ "$MODE" = "CREATE" ]; then
   build_container "$PYTHON_CONTAINER_IMAGE" "$REGISTRY_URL" "$CONTAINER_PORT" "$ENV"
   create_artifact_repo "$REPOSITORY_NAME" "$PROJECT_ID"
   push_container_gcp "$REGISTRY_URL" "$PROJECT_ID"
-  provision_gcp_infra "$ENV"
-  deploy_container "$REGISTRY_URL" "$CONTAINER_PORT" "$SERVICE_NAME" "$REGION" "$ENV"
+  #provision_gcp_infra "$ENV"
+  deploy_container "$REGISTRY_URL" \
+                    "$CONTAINER_PORT" \
+                    "$SERVICE_NAME" \
+                    "$REGION" \
+                    "$ENV" \
+                    "$PROJECT_ID" \
+                    "$GKE_DISK_SIZE" \
+                    "$GKE_MIN_NODES" \
+                    "$GKE_MAX_NODES" \
+                    "$GKE_NODE_MACHINE_TYPE"
+
 
 fi
 
