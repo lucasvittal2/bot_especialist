@@ -91,7 +91,9 @@ provision_gcp_infra() {
   ENV=$1
   PROJECT_PATH=$(pwd)
 
-  cd "terraform/environments/$ENV"
+
+
+  cd "terraform/environment"
   echo "$(pwd)"
   echo ""
   echo "🚀 Startig provisioning GCP infrastructure..."
@@ -119,7 +121,7 @@ provision_gcp_infra() {
   echo ""
   echo "📋 Generating Execution plan..."
   echo ""
-  if ! terraform plan -var-file="terraform.tfvars"; then
+  if ! terraform plan; then
     echo ""
     echo "❌ Got error on planning execution on terraform."
     echo ""
@@ -130,7 +132,7 @@ provision_gcp_infra() {
   echo ""
   echo "✅  Applying infrastructure..."
   echo ""
-  if ! terraform apply --auto-approve -var-file="terraform.tfvars"; then
+  if ! terraform apply --auto-approve; then
     echo ""
     echo "❌ Got error when applying the infrastructure."
     echo ""
@@ -141,11 +143,23 @@ provision_gcp_infra() {
   cd $PROJECT_PATH
 
 }
+set_tf_general_vars(){
 
+  REGION=$3
+  PROJECT_NAME=$2
+  REGISTRY_REPO=$4
+  CONTAINER_IMAGE_TAG=$5
+
+  export TF_VAR_app_name=$1
+  export TF_VAR_project_name=$PROJECT_NAME
+  export TF_VAR_region=$REGION
+  export TF_VAR_registry_repo_name=$CONTAINER_IMAGE_TAG
+  export TF_VAR_container_image="${REGION}.pkg.dev/${PROJECT_NAME}/${REGISTRY_REPO}/${CONTAINER_IMAGE_TAG}"
+}
 destroy_gcp_infra(){
   ENV=$1
   PROJECT_PATH=$(pwd)
-  cd "terraform/environments/$ENV"
+  cd "terraform/environment"
   echo "$(pwd)"
   echo "🔥 Destroying all provisioned GCP infrastructure..."
   echo ""
@@ -220,7 +234,7 @@ while [[ $# -gt 0 ]]; do
     ;;
   --service-name)
     SERVICE_NAME="$2"
-    echo "CONTAINER_IMAGE=$CONTAINER_IMAGE"
+    echo "SERVICE_NAME=$SERVICE_NAME"
     shift 2
     ;;
   --container-image)
@@ -258,10 +272,20 @@ if [ "$MODE" = "CREATE" ]; then
     usage
   fi
 
+
+
+  export TF_VAR_app_name="$SERVICE_NAME"
+  export TF_VAR_project_name="$PROJECT_ID"
+  export TF_VAR_region="$REGION"
+  export TF_VAR_registry_repo_name="$REPOSITORY_NAME"
+  export TF_VAR_container_image="${REGION}.pkg.dev/${PROJECT_ID}/${REPOSITORY_NAME}/${CONTAINER_IMAGE}"
+
   REGISTRY_URL="us-central1-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY_NAME}/${CONTAINER_IMAGE}"
+
   build_container "$PYTHON_CONTAINER_IMAGE" "$REGISTRY_URL" "$CONTAINER_PORT" "$ENV"
   create_artifact_repo "$REPOSITORY_NAME" "$PROJECT_ID"
   push_container_gcp "$REGISTRY_URL" "$PROJECT_ID"
+  set_tf_general_vars "$SERVICE_NAME" "$PROJECT_ID" "$REGION" "$REPOSITORY_NAME" "$CONTAINER_IMAGE"
   provision_gcp_infra "$ENV"
   deploy_container "$REGISTRY_URL" "$CONTAINER_PORT" "$SERVICE_NAME" "$REGION" "$ENV"
 

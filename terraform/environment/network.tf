@@ -1,11 +1,11 @@
 resource "google_compute_network" "default" {
   name    = "simple-adb-bot"
-  project = "the-bot-specialist-dev"
+  project = var.project_name
 }
 
 
 resource "google_compute_global_address" "private_ip_alloc" {
-  project       = "the-bot-specialist-dev"
+  project       = var.project_name
   name          = "adb-psa-bot"
   address_type  = "INTERNAL"
   purpose       = "VPC_PEERING"

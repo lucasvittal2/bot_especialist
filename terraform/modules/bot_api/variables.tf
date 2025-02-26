@@ -1,8 +1,4 @@
 # Project Variables
-variable "project_id" {
-  description = "The ID of GCP project"
-  type        = string
-}
 
 variable "project_name" {
   description = "GCP project name where resources are deployed."
