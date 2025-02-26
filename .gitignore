@@ -3,11 +3,11 @@ build/
 bot_especialist.egg-info/
 bot-especialist-3.9/
 .idea/
-/terraform/environments/dev/.terraform/
-/terraform/environments/dev/.terraform.lock.hcl
-/terraform/environments/dev/variables
-/terraform/environments/dev/terraform.tfstate.backup
-/terraform/environments/dev/terraform.tfstate
+/terraform/environment/.terraform/
+/terraform/environment/.terraform.lock.hcl
+/terraform/environment/dev/variables
+/terraform/environment/terraform.tfstate.backup
+/terraform/environment/terraform.tfstate
 .env
 /the-bot-specialist-dev-key.json
 /assets/configs/app-configs.yaml
