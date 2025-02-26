@@ -61,7 +61,7 @@ RUN gcloud config set project "$GCP_PROJECT"
 COPY --from=builder /bot_especialist/dist /bot_especialist/dist
 
 # Copy Config File
-COPY assets/configs/app-configs.yml configs/app-configs.yml
+COPY assets/configs/app-configs.yaml configs/app-configs.yaml
 
 # Install the built wheel
 RUN pip install -U langchain-community
