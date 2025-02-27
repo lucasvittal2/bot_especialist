@@ -1,8 +1,4 @@
 # Project Variables
-variable "project_id" {
-  description = "The ID of GCP project"
-  type        = string
-}
 
 variable "project_name" {
   description = "GCP project name where resources are deployed."
@@ -30,11 +26,6 @@ variable "postgres_version" {
 }
 
 variable "db_instance_type" {
-  description = "Instance type used to host Cloud SQL Databases"
-  type = string
-}
-
-variable "registry_repo_name" {
   description = "Instance type used to host Cloud SQL Databases"
   type = string
 }
