@@ -90,7 +90,7 @@ push_container_gcp(){
 provision_gcp_infra() {
   ENV=$1
   PROJECT_PATH=$(pwd)
-  cd "terraform/environments/$ENV"
+  cd "terraform/environment"
   echo "$(pwd)"
   echo ""
   echo "🚀 Startig provisioning GCP infrastructure..."
@@ -118,7 +118,7 @@ provision_gcp_infra() {
   echo ""
   echo "📋 Generating Execution plan..."
   echo ""
-  if ! terraform apply --auto-approve -var-file="terraform.tfvars"; then
+  if ! terraform apply --auto-approve; then
     echo ""
     echo "❌ Got error on planning execution on terraform."
     echo ""
@@ -129,7 +129,7 @@ provision_gcp_infra() {
   echo ""
   echo "⚙️  Applying infrastructure..."
   echo ""
-  if ! terraform apply --auto-approve -var-file="terraform.tfvars"; then
+  if ! terraform apply --auto-approve; then
     echo ""
     echo "❌ Got error when applying the infrastructure."
     echo ""
@@ -144,7 +144,7 @@ provision_gcp_infra() {
 destroy_gcp_infra(){
   ENV=$1
   PROJECT_PATH=$(pwd)
-  cd "terraform/environments/$ENV"
+  cd "terraform/environment"
   echo "$(pwd)"
   echo "🔥 Destroying all provisioned GCP infrastructure..."
   echo ""
@@ -441,7 +441,13 @@ if [ "$MODE" = "CREATE" ]; then
     usage
   fi
 
+  ## SET vars
+  export TF_VAR_project_name="$PROJECT_ID"
+  export TF_VAR_region="$REGION"
+  export TF_VAR_registry_repo_name="$REPOSITORY_NAME"
   REGISTRY_URL="us-central1-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY_NAME}/${CONTAINER_IMAGE}"
+
+  ## Run Provision pipeline
   build_container "$PYTHON_CONTAINER_IMAGE" "$REGISTRY_URL" "$CONTAINER_PORT" "$ENV"
   create_artifact_repo "$REPOSITORY_NAME" "$PROJECT_ID"
   push_container_gcp "$REGISTRY_URL" "$PROJECT_ID"
@@ -461,5 +467,6 @@ if [ "$MODE" = "CREATE" ]; then
 fi
 
 if [ "$MODE" = "DESTROY" ]; then
+
   destroy_gcp_infra "dev"
 fi
