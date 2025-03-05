@@ -19,6 +19,26 @@ inputs:
   PROJECT_ID:
     description: 'Google Cloud Project ID'
     required: true
+  REGION:
+    description: 'Google Cloud Project region'
+    required: true
+  GKE_DISK_SIZE:
+    description: 'GKE disk size of each node of cluster'
+    required: true
+    default: "25"
+  GKE_MIN_NODES:
+    description: 'Min amount of nodes in GKE cluster'
+    required: true
+    default: "1"
+
+  GKE_MAX_NODES:
+    description: 'Max amount of nodes in GKE cluster'
+    required: true
+    default: "1"
+  GKE_MACHINE_TYPE:
+    description: "type of machine used to create each node of GKE cluster"
+    required: true
+    default: "e2-medium"
 
 runs:
   using: "composite"
@@ -37,7 +57,13 @@ runs:
             --python-container-image "${{ inputs.PYTHON_IMAGE }}"  \
             --registry-repo-name "${{ inputs.REGISTRY_REPO_NAME }}" \
             --container-image "${{ inputs.CONTAINER_IMAGE }}" \
-            --project-id "${{ inputs.PROJECT_ID }}"
+            --project-id "${{ inputs.PROJECT_ID }}" \
+            --region "${{ inputs.REGION }}" \
+            --gke-disk-size "${{ inputs.GKE_DISK_SIZE }}" \
+            --gke-min-nodes "${{ inputs.GKE_MIN_NODES }}" \
+            --gke-max-nodes "${{ inputs.GKE_MAX_NODES }}" \
+            --gke-node-machine-type "${{ inputs.GKE_MACHINE_TYPE }}"
+
       shell: bash
 
     - name: Docker System Prune

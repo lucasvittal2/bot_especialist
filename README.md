@@ -1,16 +1,21 @@
-# 🤖 Bot Specialist
+# 🤖 Bot Specialist (V1.1.0)
 
 This bot is built entirely on Generative AI technology and the Retrieval-Augmented Generation (RAG) technique. Developed in the cloud, it ensures a flexible, scalable architecture while following best practices for CI/CD.
 
 The application is designed to provide fast access to information and allows users to verify the answers it generates. Acting as a "second brain," the bot processes and stores knowledge from uploaded PDF files. Once a file is added and processed, users can ask any questions related to its content and receive accurate, AI-powered responses.
 
+✨ New features added last release:
+ - Proxy to recieve user's request
+ - Implementing auto-scaling according aumount of user's requests
+ - Implement container deployment using kubernetes providing more scalability and flexibility for app
+ - integrated terraform generic variables with provisioning shell script
 ---
 
 ## ✏️ Architecture
 
 This repository is part of the following architecture:
 
-![System Architecture](assets/images/architecture.png)
+![bot_microservice](assets/images/bot_microservice.png)
 
 ### Components:
 
@@ -19,7 +24,7 @@ This repository is part of the following architecture:
 
 The image below illustrates in more detail how the API is structured:
 
-![Bot API Structure](assets/images/bot_api.png)
+![architecture](assets/images/architecture.png)
 
 ---
 
@@ -45,6 +50,7 @@ Once all prerequisites are met:
    ```
 
 2. Got to `assets/configs/app-configs-example.yml` and replace tags with your parameters, after that rename `app-configs-example.yml` to `app-configs.yml`
+3. Upload `app-configs.yml` to secrets name as `bot-api-secrets`
 
 3. **Provision the required resources**
    ```shell

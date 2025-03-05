@@ -84,6 +84,7 @@ class OpenAIBotSpecialist:
     def record_dialogue(self, answer: str, request: QueryRequest) -> None:
         dialogue_id = generate_hash(answer)
         try:
+            formatted_answer = answer.replace("'", '"')
             created_at = datetime.now(tz=pytz.timezone(self.TZ_REGION)).strftime(
                 "%Y-%m-%d %H:%M:%S"
             )
@@ -93,7 +94,13 @@ class OpenAIBotSpecialist:
                 (id, user_id, created_at, question, answer)
                 VALUES ('%s','%s', '%s', '%s', '%s')
                 """
-                % (dialogue_id, request.user_id, created_at, request.query, answer)
+                % (
+                    dialogue_id,
+                    request.user_id,
+                    created_at,
+                    request.query,
+                    formatted_answer,
+                )
             )
             self.logger.info(f"Dialogue '{dialogue_id}' recorded sucessfully")
 

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bot-specialist-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bot-specialist-api
+  template:
+    metadata:
+      labels:
+        app: bot-specialist-api
+    spec:
+      serviceAccountName: "gke-dev"
+      imagePullSecrets:
+        - name: gcp-artifact-registry
+      containers:
+        - name: bot-specialist-api
+          image: "us-central1-docker.pkg.dev/the-bot-specialist-dev/bot-especialist-repo/bot-especialist:v1.1"
+          ports:
+            - containerPort: 8090
+          env:
+            - name: PORT
+              value: "8090"

@@ -38,6 +38,7 @@ dependencies = [
     "scikit-learn==1.5.1",
     "google-cloud-alloydb-connector==1.7.0",
     "google-cloud-aiplatform==1.77.0",
+    "google-cloud-secret-manager==2.10.0",
     "cloud-sql-python-connector==1.16.0",
     "langchain==0.3.18",
     "langchain-core==0.3.34",
