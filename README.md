@@ -4,6 +4,10 @@ This bot is built entirely on Generative AI technology and the Retrieval-Augment
 
 The application is designed to provide fast access to information and allows users to verify the answers it generates. Acting as a "second brain," the bot processes and stores knowledge from uploaded PDF files. Once a file is added and processed, users can ask any questions related to its content and receive accurate, AI-powered responses.
 
+✨ New features added last release:
+ - Proxy to recieve user's request
+ - Implement container deployment using kubernetes providing more scalability and flexibility for app
+ - integrated terraform generic variables with provisioning shell script
 ---
 
 ## ✏️ Architecture
