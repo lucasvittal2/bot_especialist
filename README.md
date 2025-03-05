@@ -6,6 +6,7 @@ The application is designed to provide fast access to information and allows use
 
 ✨ New features added last release:
  - Proxy to recieve user's request
+ - Implementing auto-scaling according aumount of user's requests
  - Implement container deployment using kubernetes providing more scalability and flexibility for app
  - integrated terraform generic variables with provisioning shell script
 ---
